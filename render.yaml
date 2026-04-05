@@ -1,0 +1,39 @@
+services:
+  # Production React App
+  - type: web
+    name: restaurant-app
+    env: static
+    buildCommand: npm run build
+    staticPublishPath: dist
+    buildFilter:
+      paths:
+        - src/**/*.tsx
+        - src/**/*.ts
+        - public/**/*
+        - package.json
+        - package-lock.json
+        - vite.config.ts
+        - tailwind.config.js
+        - tsconfig.json
+        - postcss.config.js
+        - index.html
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_URL
+        value: https://your-api-url.onrender.com
+      - key: VITE_FIREBASE_API_KEY
+        value: your-firebase-api-key
+      - key: VITE_FIREBASE_AUTH_DOMAIN
+        value: your-project.firebaseapp.com
+      - key: VITE_FIREBASE_PROJECT_ID
+        value: your-project-id
+      - key: VITE_FIREBASE_STORAGE_BUCKET
+        value: your-project.appspot.com
+      - key: VITE_FIREBASE_MESSAGING_SENDER_ID
+        value: your-sender-id
+      - key: VITE_FIREBASE_APP_ID
+        value: your-app-id
+
+# Auto-deploy configuration
+version: "1"

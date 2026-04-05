@@ -3,7 +3,7 @@ services:
   - type: web
     name: restaurant-app
     env: static
-    buildCommand: npm run build
+    buildCommand: npm install && npm run build
     staticPublishPath: dist
     buildFilter:
       paths:
@@ -17,25 +17,26 @@ services:
         - tsconfig.json
         - postcss.config.js
         - index.html
+    nodeVersion: 18
     envVars:
       - key: NODE_ENV
         value: production
       - key: VITE_API_URL
-        value: https://your-api-url.onrender.com
+        value: https://onFd.onrender.com
       - key: VITE_FIREBASE_API_KEY
-        value: AIzaSyDMcUauUVvcB8bvLeH4ZkZCnWGaaP9QGzM
+        value: AIzaSyCrw-lqoQ5_NbIyuDvEcihjzFEih-bE9eE
       - key: VITE_FIREBASE_AUTH_DOMAIN
-        value: bitebuzz-restaurant.firebaseapp.com
+        value: onfd-47648.firebaseapp.com
       - key: VITE_FIREBASE_PROJECT_ID
-        value: bitebuzz-restaurant
+        value: onfd-47648
       - key: VITE_FIREBASE_STORAGE_BUCKET
-        value: bitebuzz-restaurant.firebasestorage.app
+        value: onfd-47648.firebasestorage.app
       - key: VITE_FIREBASE_MESSAGING_SENDER_ID
-        value: 250541683466
+        value: 1076430300904
       - key: VITE_FIREBASE_APP_ID
-        value: 1:250541683466:web:e502b14bce74b2451fc0f3
+        value: 1:1076430300904:web:662c77393aec3ed9470b5d
       - key: VITE_FIREBASE_MEASUREMENT_ID
-        value: G-VL7K1664ZD
+        value: G-YVMJN6C34J
 
 # Auto-deploy configuration
 version: "1"

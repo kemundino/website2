@@ -6,13 +6,13 @@ import { getAnalytics } from "firebase/analytics";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDMcUauUVvcB8bvLeH4ZkZCnWGaaP9QGzM",
-  authDomain: "bitebuzz-restaurant.firebaseapp.com",
-  projectId: "bitebuzz-restaurant",
-  storageBucket: "bitebuzz-restaurant.firebasestorage.app",
-  messagingSenderId: "250541683466",
-  appId: "1:250541683466:web:e502b14bce74b2451fc0f3",
-  measurementId: "G-VL7K1664ZD"
+  apiKey: "AIzaSyCrw-lqoQ5_NbIyuDvEcihjzFEih-bE9eE",
+  authDomain: "onfd-47648.firebaseapp.com",
+  projectId: "onfd-47648",
+  storageBucket: "onfd-47648.firebasestorage.app",
+  messagingSenderId: "1076430300904",
+  appId: "1:1076430300904:web:662c77393aec3ed9470b5d",
+  measurementId: "G-YVMJN6C34J"
 };
 
 // Initialize Firebase

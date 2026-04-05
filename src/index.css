@@ -1,0 +1,166 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Playfair+Display:wght@600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 30 25% 97%;
+    --foreground: 20 20% 12%;
+
+    --card: 30 20% 99%;
+    --card-foreground: 20 20% 12%;
+
+    --popover: 30 20% 99%;
+    --popover-foreground: 20 20% 12%;
+
+    --primary: 14 90% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 45 85% 55%;
+    --secondary-foreground: 20 20% 12%;
+
+    --muted: 30 15% 93%;
+    --muted-foreground: 20 10% 45%;
+
+    --accent: 155 50% 42%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 30 15% 88%;
+    --input: 30 15% 88%;
+    --ring: 14 90% 55%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 30 20% 99%;
+    --sidebar-foreground: 20 20% 12%;
+    --sidebar-primary: 14 90% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 30 15% 93%;
+    --sidebar-accent-foreground: 20 20% 12%;
+    --sidebar-border: 30 15% 88%;
+    --sidebar-ring: 14 90% 55%;
+
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+
+    --shadow-card: 0 2px 16px -4px hsl(20 20% 12% / 0.06);
+    --shadow-elevated: 0 8px 30px -8px hsl(20 20% 12% / 0.12);
+    --gradient-warm: linear-gradient(135deg, hsl(14, 90%, 55%), hsl(35, 95%, 55%));
+    --gradient-hero: linear-gradient(160deg, hsl(14, 90%, 55%) 0%, hsl(45, 85%, 55%) 100%);
+  }
+
+  .dark {
+    --background: 20 15% 8%;
+    --foreground: 30 20% 95%;
+    --card: 20 15% 11%;
+    --card-foreground: 30 20% 95%;
+    --popover: 20 15% 11%;
+    --popover-foreground: 30 20% 95%;
+    --primary: 14 90% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 45 85% 55%;
+    --secondary-foreground: 20 20% 12%;
+    --muted: 20 10% 18%;
+    --muted-foreground: 30 10% 60%;
+    --accent: 155 50% 42%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 20 10% 20%;
+    --input: 20 10% 20%;
+    --ring: 14 90% 55%;
+    --sidebar-background: 20 15% 8%;
+    --sidebar-foreground: 30 20% 95%;
+    --sidebar-primary: 14 90% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 20 10% 18%;
+    --sidebar-accent-foreground: 30 20% 95%;
+    --sidebar-border: 20 10% 20%;
+    --sidebar-ring: 14 90% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+  }
+
+  /* Prevent zoom on input focus on iOS */
+  input, textarea, select {
+    font-size: 16px;
+  }
+
+  /* Ensure proper viewport handling */
+  html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  #root {
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+}
+
+@layer utilities {
+  .gradient-warm {
+    background: var(--gradient-warm);
+  }
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  /* Mobile-specific fixes */
+  .mobile-container {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  /* Prevent horizontal scroll on mobile */
+  @media (max-width: 768px) {
+    body {
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    * {
+      max-width: 100%;
+    }
+    
+    /* Ensure all containers respect viewport */
+    .container, .max-w-7xl, .max-w-6xl, .max-w-4xl {
+      width: 100% !important;
+      max-width: 100vw !important;
+      padding-left: 1rem !important;
+      padding-right: 1rem !important;
+    }
+  }
+}

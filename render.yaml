@@ -23,17 +23,19 @@ services:
       - key: VITE_API_URL
         value: https://your-api-url.onrender.com
       - key: VITE_FIREBASE_API_KEY
-        value: your-firebase-api-key
+        value: AIzaSyDMcUauUVvcB8bvLeH4ZkZCnWGaaP9QGzM
       - key: VITE_FIREBASE_AUTH_DOMAIN
-        value: your-project.firebaseapp.com
+        value: bitebuzz-restaurant.firebaseapp.com
       - key: VITE_FIREBASE_PROJECT_ID
-        value: your-project-id
+        value: bitebuzz-restaurant
       - key: VITE_FIREBASE_STORAGE_BUCKET
-        value: your-project.appspot.com
+        value: bitebuzz-restaurant.firebasestorage.app
       - key: VITE_FIREBASE_MESSAGING_SENDER_ID
-        value: your-sender-id
+        value: 250541683466
       - key: VITE_FIREBASE_APP_ID
-        value: your-app-id
+        value: 1:250541683466:web:e502b14bce74b2451fc0f3
+      - key: VITE_FIREBASE_MEASUREMENT_ID
+        value: G-VL7K1664ZD
 
 # Auto-deploy configuration
 version: "1"

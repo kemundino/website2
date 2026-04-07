@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">foodapp</string>
-    <string name="title_activity_main">foodapp</string>
-    <string name="package_name">com.food.app</string>
-    <string name="custom_url_scheme">com.food.app</string>
-</resources>

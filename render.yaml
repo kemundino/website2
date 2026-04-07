@@ -22,7 +22,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: VITE_API_URL
-        value: https://onFd.onrender.com
+        value: https://website2-qu0p.onrender.com
       - key: VITE_FIREBASE_API_KEY
         value: AIzaSyCrw-lqoQ5_NbIyuDvEcihjzFEih-bE9eE
       - key: VITE_FIREBASE_AUTH_DOMAIN

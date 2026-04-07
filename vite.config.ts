@@ -8,6 +8,11 @@ export default defineConfig({
     open: true,
     host: true
   },
+  preview: {
+    port: 4173,
+    host: true,
+    allowedHosts: ['website2-qu0p.onrender.com', 'localhost', '127.0.0.1']
+  },
   build: {
     outDir: 'dist',
     sourcemap: true,

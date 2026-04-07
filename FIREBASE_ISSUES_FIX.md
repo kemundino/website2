@@ -47,7 +47,7 @@ try {
 } catch (error) {
   console.log('❌ Connection failed:', error.message);
 }
-```
+
 
 #### **Step 2: Check Data Persistence**
 1. Add an item through your app

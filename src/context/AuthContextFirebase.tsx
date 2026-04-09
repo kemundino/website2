@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { authService, UserProfile } from "@/firebase/auth";
-import { OrderService } from "@/firebase/firestore";
+import { OrderService, UserService } from "@/firebase/firestore";
 import { toast } from "sonner";
 
 export interface User {
@@ -161,6 +161,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     try {
       console.log('🔐 Attempting login for:', email);
+      console.log('📝 Remember me:', rememberMe);
       
       const result = await authService.signIn(email, password);
       

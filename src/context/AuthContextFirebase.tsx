@@ -8,7 +8,7 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
-  role: "user" | "admin";
+  role: "customer" | "admin";
   createdAt?: string;
   lastLogin?: string;
   emailVerified?: boolean;
@@ -29,7 +29,7 @@ interface AuthContextType {
   isLoading: boolean;
   hasAdmin: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
-  register: (name: string, email: string, password: string, role?: "user" | "admin") => Promise<boolean>;
+  register: (name: string, email: string, password: string, role?: "customer" | "admin") => Promise<boolean>;
   loginWithGoogle: () => Promise<boolean>;
   loginWithGitHub: () => Promise<boolean>;
   logout: () => void;
@@ -178,7 +178,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const register = useCallback(async (name: string, email: string, password: string, role: "user" | "admin" = "user"): Promise<boolean> => {
+  const register = useCallback(async (name: string, email: string, password: string, role: "customer" | "admin" = "customer"): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
     
@@ -200,8 +200,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
       
-      // Convert role to Firebase format
-      const firebaseRole = role === 'user' ? 'customer' : 'admin';
+      // Role is now in correct format (customer/admin)
+      const firebaseRole = role;
       
       const result = await authService.signUp(email, password, name.trim(), firebaseRole);
       

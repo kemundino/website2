@@ -25,7 +25,7 @@ const AuthPage = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<"user" | "admin">("user");
+  const [selectedRole, setSelectedRole] = useState<"customer" | "admin">("customer");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   
   const { login, register, loginWithGoogle, loginWithGitHub, user, isLoading, error, isAuthenticated, hasAdmin, clearError } = useAuth();
@@ -110,7 +110,7 @@ if (success) {
     toast.success("Welcome, Admin!");
     navigate("/admin"); // ወደ አድሚን ዳሽቦርድ ይመራል
   } else {
-    toast.success("Welcome back!");
+    toast.success("Welcome, Customer!");
     navigate("/menu"); // ወደ ተራ ተጠቃሚ ሜኑ ይመራል
   }
 }
@@ -326,9 +326,9 @@ if (success) {
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
-                      onClick={() => setSelectedRole("user")}
+                      onClick={() => setSelectedRole("customer")}
                       className={`rounded-lg border p-3 text-sm font-medium transition-colors ${
-                        selectedRole === "user"
+                        selectedRole === "customer"
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border bg-background text-muted-foreground hover:bg-muted"
                       }`}

@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { LogOut, ChefHat, Menu, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContextFirebase";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 

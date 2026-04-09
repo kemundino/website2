@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/context/CartContext";
-import { AuthProvider } from "@/context/AuthContext";
+import { AuthProvider } from "@/context/AuthContextFirebase";
 import { UnifiedItemsProvider } from "@/context/UnifiedItemsContext";
 import Navbar from "@/components/Navbar";
 import Index from "./pages/Index";
@@ -18,7 +18,7 @@ import CustomerProfilePage from "./pages/CustomerProfilePage";
 import NotFound from "./pages/NotFound";
 import AdminRoute from "@/components/AdminRoute";
 import { useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContextFirebase";
 import { useLocation } from "react-router-dom";
 
 const queryClient = new QueryClient();

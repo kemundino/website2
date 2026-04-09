@@ -1,4 +1,4 @@
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContextFirebase";
 import { useCustomerOrders } from "@/hooks/useRealtimeOrders";
 import { Package, Clock, Truck, CheckCircle2, ExternalLink, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";

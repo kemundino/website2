@@ -1,6 +1,6 @@
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, User, LogIn } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContextFirebase";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";

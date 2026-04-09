@@ -48,7 +48,7 @@ const convertFirebaseUser = (firebaseUser: any, profile: UserProfile): User => (
   name: profile.displayName || firebaseUser.email?.split('@')[0] || 'User',
   email: firebaseUser.email || '',
   avatar: profile.avatar || undefined,
-  role: profile.role === 'customer' ? 'user' as const : 'admin' as const,
+  role: profile.role,
   createdAt: profile.createdAt?.toISOString(),
   lastLogin: profile.lastLogin?.toISOString(),
   emailVerified: firebaseUser.emailVerified || false
@@ -105,8 +105,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check if any admin users exist
     const checkAdminUsers = async () => {
       try {
-        // For now, we'll set hasAdmin to false and update it when we have proper user service
-        setHasAdmin(false);
+        // Query users collection to check for admin users
+        const result = await UserService.query();
+        if (result.success && result.data) {
+          const adminUsers = result.data.filter((user: any) => user.role === 'admin');
+          setHasAdmin(adminUsers.length > 0);
+          console.log('👑 Admin users found:', adminUsers.length);
+        } else {
+          setHasAdmin(false);
+        }
       } catch (err) {
         console.error('Error checking admin users:', err);
         setHasAdmin(false);
@@ -148,7 +155,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user]);
 
-  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
+  const login = useCallback(async (email: string, password: string, rememberMe?: boolean): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
     

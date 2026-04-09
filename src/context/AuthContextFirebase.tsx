@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { authService, UserProfile } from "@/firebase/auth";
-import { OrderService, UserService, FirestoreService } from "@/firebase/firestore";
+import { OrderService, FirestoreService } from "@/firebase/firestore";
 import { toast } from "sonner";
 
 export interface User {

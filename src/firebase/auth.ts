@@ -5,7 +5,12 @@ import {
   signOut,
   onAuthStateChanged,
   User,
-  UserCredential
+  UserCredential,
+  GoogleAuthProvider,
+  GithubAuthProvider,
+  signInWithPopup,
+  linkWithPopup,
+  fetchSignInMethodsForEmail
 } from 'firebase/auth';
 import { UserService } from './firestore';
 
@@ -208,6 +213,125 @@ class AuthService {
     } catch (error: any) {
       console.error('Update customer stats error:', error);
       return { success: false, error: error.message || 'Failed to update customer stats' };
+    }
+  }
+
+  // Sign in with Google
+  async signInWithGoogle(): Promise<{ success: boolean; user?: User; error?: string }> {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result: UserCredential = await signInWithPopup(auth, provider);
+      
+      // Check if user exists in Firestore, create profile if not
+      const existingProfile = await this.getUserProfile(result.user.uid);
+      if (!existingProfile.success) {
+        // Create user profile for OAuth user
+        const userProfile: UserProfile = {
+          uid: result.user.uid,
+          email: result.user.email!,
+          displayName: result.user.displayName || 'Google User',
+          role: 'customer', // Default role for OAuth users
+          avatar: result.user.photoURL,
+          loyaltyPoints: 0,
+          totalOrders: 0,
+          memberSince: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        await UserService.create(userProfile);
+      }
+      
+      return { success: true, user: result.user };
+    } catch (error: any) {
+      console.error('Google sign-in error:', error);
+      let errorMessage = 'Failed to sign in with Google';
+      
+      switch (error.code) {
+        case 'auth/popup-closed-by-user':
+          errorMessage = 'Sign-in popup was closed';
+          break;
+        case 'auth/popup-blocked':
+          errorMessage = 'Sign-in popup was blocked by the browser';
+          break;
+        case 'auth/cancelled-popup-request':
+          errorMessage = 'Sign-in was cancelled';
+          break;
+        default:
+          errorMessage = error.message || 'Failed to sign in with Google';
+      }
+      
+      return { success: false, error: errorMessage };
+    }
+  }
+
+  // Sign in with GitHub
+  async signInWithGitHub(): Promise<{ success: boolean; user?: User; error?: string }> {
+    try {
+      const provider = new GithubAuthProvider();
+      const result: UserCredential = await signInWithPopup(auth, provider);
+      
+      // Check if user exists in Firestore, create profile if not
+      const existingProfile = await this.getUserProfile(result.user.uid);
+      if (!existingProfile.success) {
+        // Create user profile for OAuth user
+        const userProfile: UserProfile = {
+          uid: result.user.uid,
+          email: result.user.email!,
+          displayName: result.user.displayName || 'GitHub User',
+          role: 'customer', // Default role for OAuth users
+          avatar: result.user.photoURL,
+          loyaltyPoints: 0,
+          totalOrders: 0,
+          memberSince: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        await UserService.create(userProfile);
+      }
+      
+      return { success: true, user: result.user };
+    } catch (error: any) {
+      console.error('GitHub sign-in error:', error);
+      let errorMessage = 'Failed to sign in with GitHub';
+      
+      switch (error.code) {
+        case 'auth/popup-closed-by-user':
+          errorMessage = 'Sign-in popup was closed';
+          break;
+        case 'auth/popup-blocked':
+          errorMessage = 'Sign-in popup was blocked by the browser';
+          break;
+        case 'auth/cancelled-popup-request':
+          errorMessage = 'Sign-in was cancelled';
+          break;
+        default:
+          errorMessage = error.message || 'Failed to sign in with GitHub';
+      }
+      
+      return { success: false, error: errorMessage };
+    }
+  }
+
+  // Link OAuth provider to existing email account
+  async linkOAuthProvider(provider: 'google' | 'github'): Promise<{ success: boolean; error?: string }> {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        return { success: false, error: 'No user is currently signed in' };
+      }
+
+      let authProvider;
+      if (provider === 'google') {
+        authProvider = new GoogleAuthProvider();
+      } else {
+        authProvider = new GithubAuthProvider();
+      }
+
+      await linkWithPopup(currentUser, authProvider);
+      return { success: true };
+    } catch (error: any) {
+      console.error('Link OAuth provider error:', error);
+      return { success: false, error: error.message || 'Failed to link account' };
     }
   }
 }

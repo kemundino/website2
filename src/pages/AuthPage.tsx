@@ -28,7 +28,7 @@ const AuthPage = () => {
   const [selectedRole, setSelectedRole] = useState<"user" | "admin">("user");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   
-  const { login, register, user, isLoading, error, isAuthenticated, hasAdmin, clearError } = useAuth();
+  const { login, register, loginWithGoogle, loginWithGitHub, user, isLoading, error, isAuthenticated, hasAdmin, clearError } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already authenticated
@@ -119,8 +119,23 @@ if (success) {
     }
   };
 
-  const handleSocialLogin = (provider: string) => {
-    toast.info(`${provider} login is demo mode only`);
+  const handleSocialLogin = async (provider: string) => {
+    try {
+      let success = false;
+      
+      if (provider === "Google") {
+        success = await loginWithGoogle();
+      } else if (provider === "GitHub") {
+        success = await loginWithGitHub();
+      }
+      
+      if (success) {
+        toast.success(`Welcome! Signed in with ${provider} 🎉`);
+        // Navigation will be handled by the useEffect that watches isAuthenticated
+      }
+    } catch (error) {
+      toast.error(`Failed to sign in with ${provider}`);
+    }
   };
 
   const handleForgotPassword = () => {

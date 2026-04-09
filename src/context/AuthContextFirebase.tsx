@@ -30,6 +30,8 @@ interface AuthContextType {
   hasAdmin: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
   register: (name: string, email: string, password: string, role?: "user" | "admin") => Promise<boolean>;
+  loginWithGoogle: () => Promise<boolean>;
+  loginWithGitHub: () => Promise<boolean>;
   logout: () => void;
   updateProfile: (data: Partial<User>) => Promise<boolean>;
   orders: Order[];
@@ -231,6 +233,66 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [hasAdmin]);
 
+  const loginWithGoogle = useCallback(async (): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      console.log('🔍 Attempting Google sign-in');
+      
+      const result = await authService.signInWithGoogle();
+      
+      if (result.success) {
+        console.log('✅ Google sign-in successful');
+        toast.success('Welcome! Signed in with Google 🎉');
+        return true;
+      } else {
+        console.error('❌ Google sign-in failed:', result.error);
+        setError(result.error || 'Google sign-in failed');
+        toast.error(result.error || 'Google sign-in failed');
+        return false;
+      }
+    } catch (err) {
+      console.error('❌ Google sign-in error:', err);
+      const errorMessage = 'An unexpected error occurred during Google sign-in';
+      setError(errorMessage);
+      toast.error(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const loginWithGitHub = useCallback(async (): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      console.log('🔍 Attempting GitHub sign-in');
+      
+      const result = await authService.signInWithGitHub();
+      
+      if (result.success) {
+        console.log('✅ GitHub sign-in successful');
+        toast.success('Welcome! Signed in with GitHub 🎉');
+        return true;
+      } else {
+        console.error('❌ GitHub sign-in failed:', result.error);
+        setError(result.error || 'GitHub sign-in failed');
+        toast.error(result.error || 'GitHub sign-in failed');
+        return false;
+      }
+    } catch (err) {
+      console.error('❌ GitHub sign-in error:', err);
+      const errorMessage = 'An unexpected error occurred during GitHub sign-in';
+      setError(errorMessage);
+      toast.error(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const updateProfile = useCallback(async (data: Partial<User>): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
@@ -353,6 +415,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       hasAdmin,
       login, 
       register, 
+      loginWithGoogle,
+      loginWithGitHub,
       logout, 
       updateProfile,
       orders, 

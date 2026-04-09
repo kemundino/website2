@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { authService, UserProfile } from "@/firebase/auth";
-import { OrderService, UserService } from "@/firebase/firestore";
+import { OrderService, UserService, FirestoreService } from "@/firebase/firestore";
 import { toast } from "sonner";
 
 export interface User {
@@ -105,8 +105,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check if any admin users exist
     const checkAdminUsers = async () => {
       try {
-        // Query users collection to check for admin users
-        const result = await UserService.query();
+        // Get all users to check for admin users
+        const result = await FirestoreService.getAll('users');
         if (result.success && result.data) {
           const adminUsers = result.data.filter((user: any) => user.role === 'admin');
           setHasAdmin(adminUsers.length > 0);

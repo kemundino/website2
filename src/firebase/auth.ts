@@ -70,6 +70,11 @@ class AuthService {
         case 'auth/too-many-requests':
           errorMessage = 'Too many failed attempts. Please try again later';
           break;
+        // Firebase JS SDK v10+ uses this instead of separate wrong-password / user-not-found codes
+        case 'auth/invalid-credential':
+        case 'auth/invalid-login-credentials':
+          errorMessage = 'Invalid email or password';
+          break;
         default:
           errorMessage = error.message || 'Failed to sign in';
       }
@@ -202,6 +207,30 @@ class AuthService {
           return { success: true, profile };
         }
         return { success: false, error: 'Invalid user profile structure' };
+      }
+
+      // Firebase Auth account exists but no Firestore row yet (legacy signups, partial failures, etc.).
+      // While the auth listener runs, currentUser matches — bootstrap a profile without touching other modules.
+      const cu = auth.currentUser;
+      const bootstrapEmail = cu?.uid === uid ? (cu.email || cu.providerData[0]?.email || null) : null;
+      if (bootstrapEmail) {
+        const userProfile: UserProfile = {
+          uid,
+          email: bootstrapEmail,
+          displayName: cu!.displayName || bootstrapEmail.split('@')[0] || 'User',
+          role: 'customer',
+          avatar: cu!.photoURL ?? undefined,
+          loyaltyPoints: 0,
+          totalOrders: 0,
+          memberSince: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        const created = await UserService.create(userProfile);
+        if (created.success) {
+          return { success: true, profile: userProfile };
+        }
+        console.warn('Could not bootstrap Firestore user profile:', created.error);
       }
 
       return { success: false, error: 'User profile not found' };

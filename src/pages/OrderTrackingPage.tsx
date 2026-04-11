@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useCustomerOrders } from '@/hooks/useRealtimeOrders'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth } from '@/context/AuthContextFirebase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'

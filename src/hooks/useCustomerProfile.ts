@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth } from '@/context/AuthContextFirebase'
 
 export interface CustomerProfile {
   id: string

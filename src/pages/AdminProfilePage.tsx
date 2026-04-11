@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth } from '@/context/AuthContextFirebase'
 import { useCustomerProfile } from '@/hooks/useCustomerProfile'
 import { useCustomerOrders } from '@/hooks/useRealtimeOrders'
 import { useUnifiedItems } from '@/context/UnifiedItemsContext'

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '@/context/CartContext'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth } from '@/context/AuthContextFirebase'
 import { useRealtimeOrders } from '@/hooks/useRealtimeOrders'
 import { useInventory } from '@/hooks/useInventory'
 import { useCustomerProfile } from '@/hooks/useCustomerProfile'

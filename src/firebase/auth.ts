@@ -168,18 +168,30 @@ class AuthService {
   async getUserProfile(uid: string): Promise<{ success: boolean; profile?: UserProfile; error?: string }> {
     try {
       const normalizeProfile = (data: Record<string, unknown>, authUid: string): UserProfile | null => {
-        const email = data.email as string | undefined;
-        const rawRole = data.role as string | undefined;
+        const rawEmail =
+          (typeof data.email === 'string' && data.email) ||
+          (typeof data['Email'] === 'string' && (data['Email'] as string)) ||
+          undefined;
+        const email = rawEmail?.trim();
         if (!email) return null;
 
+        const rawRole = data.role;
+        const roleStr = typeof rawRole === 'string' ? rawRole.trim().toLowerCase() : '';
+        const isAdminFlag =
+          data.isAdmin === true ||
+          data.isAdmin === 'true' ||
+          data['is_admin'] === true;
+
         let role: 'admin' | 'customer';
-        if (rawRole === 'admin') role = 'admin';
-        else if (rawRole === 'customer' || rawRole === 'user') role = 'customer';
-        else if (rawRole) {
+        if (isAdminFlag || roleStr === 'admin') {
+          role = 'admin';
+        } else if (roleStr === 'customer' || roleStr === 'user' || roleStr === '') {
+          role = 'customer';
+        } else if (typeof rawRole === 'string' && rawRole.length > 0) {
           console.warn('Unknown role in Firestore profile; defaulting to customer:', rawRole);
           role = 'customer';
         } else {
-          return null;
+          role = 'customer';
         }
 
         const docUid = typeof data.uid === 'string' && data.uid ? data.uid : authUid;
@@ -209,10 +221,39 @@ class AuthService {
         return { success: false, error: 'Invalid user profile structure' };
       }
 
+      // Manual/imported users: document id ≠ Auth uid and `uid` field missing or stale — match by email.
+      const cu = auth.currentUser;
+      const authEmail = cu?.uid === uid ? (cu.email || cu.providerData[0]?.email || null) : null;
+      if (authEmail) {
+        const byEmail = await UserService.getByEmail(authEmail.trim());
+        if (byEmail.success && byEmail.data?.length) {
+          const rows = byEmail.data as Record<string, unknown>[];
+          const pickRow = (): Record<string, unknown> => {
+            if (rows.length === 1) return rows[0];
+            const rank = (row: Record<string, unknown>) => {
+              const r = typeof row.role === 'string' ? row.role.trim().toLowerCase() : '';
+              if (row.isAdmin === true || r === 'admin') return 2;
+              if (r === 'customer' || r === 'user') return 1;
+              return 0;
+            };
+            return [...rows].sort((a, b) => rank(b) - rank(a))[0];
+          };
+          const row = pickRow();
+          const profile = normalizeProfile(row, uid);
+          if (profile) {
+            try {
+              await UserService.mergeCanonicalFromRow(uid, row);
+            } catch (syncErr) {
+              console.warn('Could not sync canonical users/{uid} from email match (non-fatal):', syncErr);
+            }
+            return { success: true, profile };
+          }
+        }
+      }
+
       // Firebase Auth account exists but no Firestore row yet (legacy signups, partial failures, etc.).
       // While the auth listener runs, currentUser matches — bootstrap a profile without touching other modules.
-      const cu = auth.currentUser;
-      const bootstrapEmail = cu?.uid === uid ? (cu.email || cu.providerData[0]?.email || null) : null;
+      const bootstrapEmail = authEmail;
       if (bootstrapEmail) {
         const userProfile: UserProfile = {
           uid,

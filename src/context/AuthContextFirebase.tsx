@@ -29,9 +29,9 @@ interface AuthContextType {
   isLoading: boolean;
   hasAdmin: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
-  register: (name: string, email: string, password: string, role?: "customer" | "admin") => Promise<boolean>;
-  loginWithGoogle: () => Promise<boolean>;
-  loginWithGitHub: () => Promise<boolean>;
+  register: (name: string, email: string, password: string, role?: "customer" | "admin", rememberMe?: boolean) => Promise<boolean>;
+  loginWithGoogle: (rememberMe?: boolean) => Promise<boolean>;
+  loginWithGitHub: (rememberMe?: boolean) => Promise<boolean>;
   logout: () => void;
   updateProfile: (data: Partial<User>) => Promise<boolean>;
   orders: Order[];
@@ -42,6 +42,16 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const toIsoDate = (value: unknown): string | undefined => {
+  if (value == null) return undefined;
+  if (typeof value === 'string') return value;
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'object' && 'toDate' in value && typeof (value as { toDate: () => Date }).toDate === 'function') {
+    return (value as { toDate: () => Date }).toDate().toISOString();
+  }
+  return undefined;
+};
+
 // Convert Firebase user to our User interface
 const convertFirebaseUser = (firebaseUser: any, profile: UserProfile): User => ({
   id: firebaseUser.uid,
@@ -49,8 +59,8 @@ const convertFirebaseUser = (firebaseUser: any, profile: UserProfile): User => (
   email: firebaseUser.email || '',
   avatar: profile.avatar || undefined,
   role: profile.role,
-  createdAt: profile.createdAt?.toISOString(),
-  lastLogin: profile.lastLogin?.toISOString(),
+  createdAt: toIsoDate(profile.createdAt as unknown),
+  lastLogin: toIsoDate(profile.lastLogin as unknown),
   emailVerified: firebaseUser.emailVerified || false
 });
 
@@ -78,15 +88,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (profileResult.success && profileResult.profile) {
             const convertedUser = convertFirebaseUser(firebaseUser, profileResult.profile);
             setUser(convertedUser);
+            setError(null);
             console.log('✅ User profile loaded successfully');
-            
-            // Update last login
-            await authService.updateUserProfile(firebaseUser.uid, {
+
+            const lastLoginRes = await authService.updateUserProfile(firebaseUser.uid, {
               lastLogin: new Date()
             });
+            if (!lastLoginRes.success) {
+              console.warn('Could not persist lastLogin (session still active):', lastLoginRes.error);
+            }
           } else {
-            console.error('❌ Failed to load user profile');
-            setError('Failed to load user profile');
+            console.error('❌ Failed to load user profile:', profileResult.error);
+            setError(profileResult.error || 'Failed to load user profile');
             await authService.signOut();
           }
         } catch (err) {
@@ -163,7 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('🔐 Attempting login for:', email);
       console.log('📝 Remember me:', rememberMe);
       
-      const result = await authService.signIn(email, password);
+      const result = await authService.signIn(email, password, rememberMe ?? true);
       
       if (result.success) {
         console.log('✅ Login successful');
@@ -186,7 +199,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const register = useCallback(async (name: string, email: string, password: string, role: "customer" | "admin" = "customer"): Promise<boolean> => {
+  const register = useCallback(async (name: string, email: string, password: string, role: "customer" | "admin" = "customer", rememberMe = true): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
     
@@ -211,7 +224,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Role is now in correct format (customer/admin)
       const firebaseRole = role;
       
-      const result = await authService.signUp(email, password, name.trim(), firebaseRole);
+      const result = await authService.signUp(email, password, name.trim(), firebaseRole, rememberMe);
       
       if (result.success) {
         console.log('✅ Registration successful');
@@ -239,16 +252,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
-  }, [hasAdmin]);
+  }, []);
 
-  const loginWithGoogle = useCallback(async (): Promise<boolean> => {
+  const loginWithGoogle = useCallback(async (rememberMe = true): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
     
     try {
       console.log('🔍 Attempting Google sign-in');
       
-      const result = await authService.signInWithGoogle();
+      const result = await authService.signInWithGoogle(rememberMe);
       
       if (result.success) {
         console.log('✅ Google sign-in successful');
@@ -271,14 +284,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const loginWithGitHub = useCallback(async (): Promise<boolean> => {
+  const loginWithGitHub = useCallback(async (rememberMe = true): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
     
     try {
       console.log('🔍 Attempting GitHub sign-in');
       
-      const result = await authService.signInWithGitHub();
+      const result = await authService.signInWithGitHub(rememberMe);
       
       if (result.success) {
         console.log('✅ GitHub sign-in successful');

@@ -23,8 +23,9 @@ const AuthPage = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [selectedRole, setSelectedRole] = useState<"customer" | "admin">("customer");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   
@@ -46,6 +47,7 @@ const AuthPage = () => {
   useEffect(() => {
     clearError();
     setFieldErrors({});
+    setConfirmPassword("");
   }, [isLogin, clearError]);
 
   const validateEmail = (email: string) => {
@@ -74,6 +76,14 @@ const AuthPage = () => {
       errors.name = "Name must be at least 2 characters";
     }
 
+    if (!isLogin) {
+      if (!confirmPassword) {
+        errors.confirmPassword = "Please confirm your password";
+      } else if (confirmPassword !== password) {
+        errors.confirmPassword = "Passwords do not match";
+      }
+    }
+
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -91,29 +101,9 @@ const AuthPage = () => {
       
       if (isLogin) {
         success = await login(email, password, rememberMe);
-        if (success) {
-          toast.success("Welcome back! 🎉");
-        }
       } else {
-        success = await register(name, email, password, selectedRole);
-        if (success) {
-          if (selectedRole === "admin") {
-            toast.success("Admin account created! You have full access. 🛡️");
-          } else {
-            toast.success("Account created successfully! 🎉");
-          }
-        }
+        success = await register(name, email, password, selectedRole, rememberMe);
       }
-
-if (success) {
-  if (selectedRole === "admin") { 
-    toast.success("Welcome, Admin!");
-    navigate("/admin"); // ወደ አድሚን ዳሽቦርድ ይመራል
-  } else {
-    toast.success("Welcome, Customer!");
-    navigate("/menu"); // ወደ ተራ ተጠቃሚ ሜኑ ይመራል
-  }
-}
     } catch (err) {
       toast.error("An unexpected error occurred");
     }
@@ -124,9 +114,9 @@ if (success) {
       let success = false;
       
       if (provider === "Google") {
-        success = await loginWithGoogle();
+        success = await loginWithGoogle(rememberMe);
       } else if (provider === "GitHub") {
-        success = await loginWithGitHub();
+        success = await loginWithGitHub(rememberMe);
       }
       
       if (success) {
@@ -312,6 +302,37 @@ if (success) {
                 <p className="mt-1 text-xs text-red-500">{fieldErrors.password}</p>
               )}
             </div>
+
+            {/* Confirm password (register only) */}
+            <AnimatePresence>
+              {!isLogin && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Confirm password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className={`w-full rounded-lg border bg-background py-3 pl-10 pr-4 text-sm transition-colors ${
+                        fieldErrors.confirmPassword
+                          ? "border-red-500 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                          : "border-input focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      }`}
+                      disabled={isLoading}
+                      autoComplete="new-password"
+                    />
+                    {fieldErrors.confirmPassword && (
+                      <p className="mt-1 text-xs text-red-500">{fieldErrors.confirmPassword}</p>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Role Selection (Register Only) */}
             <AnimatePresence>

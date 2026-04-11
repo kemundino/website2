@@ -10,7 +10,9 @@ import {
   GithubAuthProvider,
   signInWithPopup,
   linkWithPopup,
-  fetchSignInMethodsForEmail
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence
 } from 'firebase/auth';
 import { UserService } from './firestore';
 
@@ -32,8 +34,20 @@ export interface UserProfile {
 
 class AuthService {
   // Sign in with email and password
-  async signIn(email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> {
+  async signIn(
+    email: string,
+    password: string,
+    rememberMe = true
+  ): Promise<{ success: boolean; user?: User; error?: string }> {
     try {
+      try {
+        await setPersistence(
+          auth,
+          rememberMe ? browserLocalPersistence : browserSessionPersistence
+        );
+      } catch (pErr) {
+        console.warn('setPersistence failed; using default auth storage:', pErr);
+      }
       const userCredential: UserCredential = await signInWithEmailAndPassword(auth, email, password);
       return { success: true, user: userCredential.user };
     } catch (error: any) {
@@ -65,8 +79,22 @@ class AuthService {
   }
 
   // Sign up with email and password
-  async signUp(email: string, password: string, displayName: string, role: 'admin' | 'customer' = 'customer'): Promise<{ success: boolean; user?: User; error?: string }> {
+  async signUp(
+    email: string,
+    password: string,
+    displayName: string,
+    role: 'admin' | 'customer' = 'customer',
+    rememberMe = true
+  ): Promise<{ success: boolean; user?: User; error?: string }> {
     try {
+      try {
+        await setPersistence(
+          auth,
+          rememberMe ? browserLocalPersistence : browserSessionPersistence
+        );
+      } catch (pErr) {
+        console.warn('setPersistence failed; using default auth storage:', pErr);
+      }
       const userCredential: UserCredential = await createUserWithEmailAndPassword(auth, email, password);
       
       // Create user profile in Firestore
@@ -165,7 +193,14 @@ class AuthService {
       if (legacy.success && legacy.data?.length) {
         const row = legacy.data[0] as Record<string, unknown>;
         const profile = normalizeProfile(row, uid);
-        if (profile) return { success: true, profile };
+        if (profile) {
+          try {
+            await UserService.mergeCanonicalFromRow(uid, row);
+          } catch (syncErr) {
+            console.warn('Could not sync canonical users/{uid} document (non-fatal):', syncErr);
+          }
+          return { success: true, profile };
+        }
         return { success: false, error: 'Invalid user profile structure' };
       }
 
@@ -241,8 +276,16 @@ class AuthService {
   }
 
   // Sign in with Google
-  async signInWithGoogle(): Promise<{ success: boolean; user?: User; error?: string }> {
+  async signInWithGoogle(rememberMe = true): Promise<{ success: boolean; user?: User; error?: string }> {
     try {
+      try {
+        await setPersistence(
+          auth,
+          rememberMe ? browserLocalPersistence : browserSessionPersistence
+        );
+      } catch (pErr) {
+        console.warn('setPersistence failed; using default auth storage:', pErr);
+      }
       const provider = new GoogleAuthProvider();
       const result: UserCredential = await signInWithPopup(auth, provider);
       
@@ -255,7 +298,7 @@ class AuthService {
           email: result.user.email!,
           displayName: result.user.displayName || 'Google User',
           role: 'customer', // Default role for OAuth users
-          avatar: result.user.photoURL,
+          avatar: result.user.photoURL ?? undefined,
           loyaltyPoints: 0,
           totalOrders: 0,
           memberSince: new Date(),
@@ -289,8 +332,16 @@ class AuthService {
   }
 
   // Sign in with GitHub
-  async signInWithGitHub(): Promise<{ success: boolean; user?: User; error?: string }> {
+  async signInWithGitHub(rememberMe = true): Promise<{ success: boolean; user?: User; error?: string }> {
     try {
+      try {
+        await setPersistence(
+          auth,
+          rememberMe ? browserLocalPersistence : browserSessionPersistence
+        );
+      } catch (pErr) {
+        console.warn('setPersistence failed; using default auth storage:', pErr);
+      }
       const provider = new GithubAuthProvider();
       const result: UserCredential = await signInWithPopup(auth, provider);
       
@@ -303,7 +354,7 @@ class AuthService {
           email: result.user.email!,
           displayName: result.user.displayName || 'GitHub User',
           role: 'customer', // Default role for OAuth users
-          avatar: result.user.photoURL,
+          avatar: result.user.photoURL ?? undefined,
           loyaltyPoints: 0,
           totalOrders: 0,
           memberSince: new Date(),

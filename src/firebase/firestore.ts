@@ -37,6 +37,25 @@ export class FirestoreService {
     }
   }
 
+  /** Deep-merge fields into a document (creates doc if missing). Safer than updateDoc for partial profile writes. */
+  static async mergeDocument(collectionName: string, docId: string, data: Record<string, unknown>) {
+    try {
+      const docRef = doc(db, collectionName, docId);
+      const cleaned = Object.fromEntries(
+        Object.entries(data).filter(([, v]) => v !== undefined)
+      );
+      await setDoc(
+        docRef,
+        { ...cleaned, updatedAt: serverTimestamp() },
+        { merge: true }
+      );
+      return { success: true, id: docId };
+    } catch (error) {
+      console.error('Error merge document:', error);
+      return { success: false, error };
+    }
+  }
+
   // Update a document
   static async update(collectionName: string, docId: string, data: any) {
     try {
@@ -181,7 +200,14 @@ export const UserService = {
     }
     return FirestoreService.setDocument('users', userData.uid, userData);
   },
-  update: (userId: string, userData: any) => FirestoreService.update('users', userId, userData),
+  /** Uses merge so lastLogin and other patches work even if users/{uid} was missing (legacy profiles). */
+  update: (userId: string, userData: any) =>
+    FirestoreService.mergeDocument('users', userId, userData as Record<string, unknown>),
+  /** Copy legacy profile (random Firestore doc id) onto canonical users/{authUid}. */
+  mergeCanonicalFromRow: (authUid: string, row: Record<string, unknown>) => {
+    const { id: _docId, ...rest } = row;
+    return FirestoreService.mergeDocument('users', authUid, { ...rest, uid: authUid });
+  },
   getOne: (userId: string) => FirestoreService.getOne('users', userId),
   /** Legacy profiles created with addDoc live under a random id but still have field `uid`. */
   getByUidField: (uid: string) =>

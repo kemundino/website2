@@ -1,10 +1,11 @@
 import { useAuth } from "@/context/AuthContextFirebase";
 import { useCustomerOrders } from "@/hooks/useRealtimeOrders";
+import { FeedbackService } from "@/firebase/firestore";
 import { Package, Clock, Truck, CheckCircle2, ExternalLink, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import FeedbackModal from "@/components/FeedbackModal";
 
@@ -35,29 +36,32 @@ const statusConfig = {
 const OrdersPage = () => {
   const { user, isAuthenticated } = useAuth();
   const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
-  
-  // Add error handling for the hook
-  let orders: Order[] = [];
-  let confirmDelivery: (orderId: string) => boolean = () => false;
-  
-  try {
-    const ordersData = useCustomerOrders(user?.name);
-    orders = ordersData.orders || [];
-    confirmDelivery = ordersData.confirmDelivery || (() => false);
-  } catch (error) {
-    console.error('Error loading orders:', error);
-    orders = [];
-  }
+  const [feedbackKeys, setFeedbackKeys] = useState<Set<string>>(new Set());
+
+  const { orders, confirmDelivery } = useCustomerOrders(user?.name);
+
+  useEffect(() => {
+    const unsub = FeedbackService.subscribe((rows) => {
+      const s = new Set<string>();
+      (rows as Record<string, unknown>[]).forEach((r) => {
+        const fk = r.feedbackKey as string | undefined;
+        if (fk) s.add(fk);
+        else if (r.orderId && r.itemName) {
+          s.add(`${r.orderId}_${r.itemName}`);
+        }
+      });
+      setFeedbackKeys(s);
+    });
+    return () => unsub();
+  }, []);
 
   const handleConfirmDelivery = async (orderId: string) => {
     setConfirmingOrderId(orderId);
     
     try {
-      const success = confirmDelivery(orderId);
+      const success = await confirmDelivery(orderId);
       if (success) {
         toast.success('Delivery confirmed successfully! 🎉');
-        // Professional approach: trigger a re-render through the hook's state update
-        // The useCustomerOrders hook will automatically update when the underlying orders change
       } else {
         toast.error('Failed to confirm delivery');
       }
@@ -71,13 +75,9 @@ const OrdersPage = () => {
 
   const handleFeedback = (orderId: string, feedback: { rating: number; comment: string }) => {
     console.log('Feedback submitted:', orderId, feedback);
-    // In a real app, this would send to a server
   };
 
-  const checkIfFeedbackGiven = (orderId: string) => {
-    const existingFeedback = JSON.parse(localStorage.getItem('bitebuzz_feedback') || '{}');
-    return existingFeedback[orderId] ? true : false;
-  };
+  const checkIfFeedbackGiven = (key: string) => feedbackKeys.has(key);
 
   if (!isAuthenticated) {
     return (

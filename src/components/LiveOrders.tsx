@@ -51,9 +51,9 @@ const LiveOrders = () => {
       }
     }
 
-    const handleStatusChange = (orderId: string, newStatus: string) => {
+    const handleStatusChange = async (orderId: string, newStatus: string) => {
       console.log('🔄 Changing status:', orderId, 'to', newStatus)
-      const success = updateStatus(orderId, newStatus as any)
+      const success = await updateStatus(orderId, newStatus as any)
       if (success) {
         toast.success(`Order ${orderId} updated to ${getStatusText(newStatus)}`)
       } else {

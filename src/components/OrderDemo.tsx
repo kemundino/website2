@@ -26,9 +26,12 @@ const OrderDemo = () => {
       action: () => {
         const pendingOrder = orders.find(o => o.status === 'pending')
         if (pendingOrder) {
-          updateStatus(pendingOrder.id, 'processing')
-          setCurrentDemo(2)
-          toast.success("Order status updated to Processing")
+          void updateStatus(pendingOrder.id, 'processing').then((ok) => {
+            if (ok) {
+              setCurrentDemo(2)
+              toast.success("Order status updated to Processing")
+            }
+          })
         }
       }
     },
@@ -38,9 +41,12 @@ const OrderDemo = () => {
       action: () => {
         const processingOrder = orders.find(o => o.status === 'processing')
         if (processingOrder) {
-          updateStatus(processingOrder.id, 'on_the_way')
-          setCurrentDemo(3)
-          toast.success("Order is now on the way!")
+          void updateStatus(processingOrder.id, 'on_the_way').then((ok) => {
+            if (ok) {
+              setCurrentDemo(3)
+              toast.success("Order is now on the way!")
+            }
+          })
         }
       }
     },

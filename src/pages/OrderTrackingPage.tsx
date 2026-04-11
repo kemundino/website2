@@ -85,9 +85,9 @@ const OrderTrackingPage = () => {
     }
   }
 
-  const handleConfirmDelivery = () => {
+  const handleConfirmDelivery = async () => {
     if (order && order.status === 'on_the_way') {
-      const success = confirmDelivery(order.id)
+      const success = await confirmDelivery(order.id)
       if (success) {
         toast.success('Thank you! Delivery confirmed.')
       } else {

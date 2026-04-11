@@ -129,7 +129,7 @@ const CheckoutFlow = () => {
     setStep(2)
   }
 
-  const handlePaymentSubmit = async (e: React.FormEvent) => {
+    const handlePaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     console.log('Payment submit handler called!')
     console.log('Payment info:', paymentInfo)
@@ -153,31 +153,33 @@ const CheckoutFlow = () => {
 
     const finalTotal = totalPrice + 2.99 + (totalPrice * 0.08);
 
-    // Create order in real-time system
     console.log('Creating order with items:', orderItems)
     console.log('User:', user)
     
-    const newOrder = addOrder({
-      customerName: user?.name || 'Customer',
-      items: orderItems,
-      total: finalTotal,
-      status: 'pending',
-      deliveryAddress: `${deliveryInfo.address}, ${deliveryInfo.city} ${deliveryInfo.zipCode}`
-    })
+    try {
+      const newOrder = await addOrder({
+        customerName: user?.name || 'Customer',
+        items: orderItems,
+        total: finalTotal,
+        status: 'pending',
+        deliveryAddress: `${deliveryInfo.address}, ${deliveryInfo.city} ${deliveryInfo.zipCode}`
+      })
 
-    console.log('New order created:', newOrder)
+      console.log('New order created:', newOrder)
 
-    // Deduct stock from inventory
-    deductStock(orderItems);
-
-    // Add loyalty points (10 points per dollar)
-    addLoyaltyPoints(Math.floor(finalTotal * 10));
-    
-    setOrderId(newOrder.id)
-    setOrderPlaced(true)
-    clearCart()
-    setLoading(false)
-    toast.success('Order placed successfully! Loyalty points added.')
+      deductStock(orderItems);
+      addLoyaltyPoints(Math.floor(finalTotal * 10));
+      
+      setOrderId(newOrder.id)
+      setOrderPlaced(true)
+      clearCart()
+      toast.success('Order placed successfully! Loyalty points added.')
+    } catch (err) {
+      console.error(err)
+      toast.error('Could not place order. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const renderStepIndicator = () => (
@@ -393,7 +395,7 @@ const CheckoutFlow = () => {
                       <Button 
                         type="button" 
                         variant="destructive" 
-                        onClick={() => {
+                        onClick={async () => {
                           console.log('TEST: Direct order creation')
                           const testOrder = {
                             customerName: user?.name || 'Test Customer',
@@ -406,9 +408,13 @@ const CheckoutFlow = () => {
                             status: 'pending' as const,
                             deliveryAddress: 'Test Address'
                           }
-                          const newOrder = addOrder(testOrder)
-                          console.log('TEST: Order created:', newOrder)
-                          toast.success('Test order created!')
+                          try {
+                            const newOrder = await addOrder(testOrder)
+                            console.log('TEST: Order created:', newOrder)
+                            toast.success('Test order created!')
+                          } catch {
+                            toast.error('Test order failed')
+                          }
                         }}
                         className="w-full"
                       >

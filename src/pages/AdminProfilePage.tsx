@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContextFirebase'
 import { useCustomerProfile } from '@/hooks/useCustomerProfile'
-import { useCustomerOrders } from '@/hooks/useRealtimeOrders'
+import { useRealtimeOrders } from '@/hooks/useRealtimeOrders'
 import { useUnifiedItems } from '@/context/UnifiedItemsContext'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -20,7 +20,7 @@ import { toast } from 'sonner'
 const AdminProfilePage = () => {
   const { user, logout, isAuthenticated } = useAuth()
   const { profile, updateProfile, addAddress } = useCustomerProfile()
-  const { orders } = useCustomerOrders(user?.name)
+  const { orders: systemOrders } = useRealtimeOrders()
   const { items } = useUnifiedItems()
   
   const [isEditing, setIsEditing] = useState(false)
@@ -45,12 +45,12 @@ const AdminProfilePage = () => {
     return adminTabs.find(tab => tab.value === activeTab) || adminTabs[0]
   }
 
-  // Calculate admin statistics
+  // Calculate admin statistics (orders from Firestore)
   const calculateAdminStats = () => {
-    const allOrders = JSON.parse(localStorage.getItem('bitebuzz_orders') || '[]')
-    const totalRevenue = allOrders.reduce((sum: number, order: any) => sum + order.total, 0)
-    const totalCustomers = new Set(allOrders.map((order: any) => order.customerName)).size
-    const todayOrders = allOrders.filter((order: any) => 
+    const allOrders = systemOrders
+    const totalRevenue = allOrders.reduce((sum, order) => sum + order.total, 0)
+    const totalCustomers = new Set(allOrders.map((order) => order.customerName)).size
+    const todayOrders = allOrders.filter((order) => 
       new Date(order.createdAt).toDateString() === new Date().toDateString()
     ).length
     

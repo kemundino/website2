@@ -66,7 +66,6 @@ const convertFirebaseUser = (firebaseUser: any, profile: UserProfile): User => (
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasAdmin, setHasAdmin] = useState(false);
@@ -140,33 +139,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       unsubscribe();
     };
   }, []);
-
-  // Load user orders
-  useEffect(() => {
-    if (user) {
-      console.log('📦 Loading orders for user:', user.email);
-      
-      const unsubscribe = OrderService.subscribe((orderData) => {
-        const convertedOrders: Order[] = orderData.map(order => ({
-          id: order.id,
-          items: order.items || [],
-          total: order.total || 0,
-          status: order.status || "preparing",
-          createdAt: order.createdAt?.toDate?.()?.toISOString() || order.createdAt,
-          address: order.address || ""
-        }));
-        
-        setOrders(convertedOrders);
-        console.log(`📦 Loaded ${convertedOrders.length} orders`);
-      });
-
-      return () => {
-        unsubscribe();
-      };
-    } else {
-      setOrders([]);
-    }
-  }, [user]);
 
   const login = useCallback(async (email: string, password: string, rememberMe?: boolean): Promise<boolean> => {
     setIsLoading(true);
@@ -440,7 +412,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       loginWithGitHub,
       logout, 
       updateProfile,
-      orders, 
+      orders: [] as Order[], 
       addOrder,
       error,
       clearError

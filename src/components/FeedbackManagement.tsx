@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Star, MessageSquare, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { FeedbackService } from '@/firebase/firestore';
 
 interface FeedbackData {
+  id: string;
   rating: number;
   comment: string;
   itemName: string;
@@ -11,20 +13,39 @@ interface FeedbackData {
   orderId: string;
 }
 
+function toIso(v: unknown): string {
+  if (v == null) return new Date().toISOString();
+  if (typeof v === 'string') return v;
+  if (
+    typeof v === 'object' &&
+    v !== null &&
+    'toDate' in v &&
+    typeof (v as { toDate: () => Date }).toDate === 'function'
+  ) {
+    return (v as { toDate: () => Date }).toDate().toISOString();
+  }
+  return new Date().toISOString();
+}
+
 const FeedbackManagement = () => {
   const [feedbacks, setFeedbacks] = useState<FeedbackData[]>([]);
 
   useEffect(() => {
-    // Load feedbacks from localStorage
-    const storedFeedbacks = JSON.parse(localStorage.getItem('bitebuzz_feedback') || '{}');
-    const feedbackList: FeedbackData[] = Object.entries(storedFeedbacks).map(([key, data]: [string, any]) => ({
-      ...data,
-      orderId: key
-    }));
-    
-    // Sort by timestamp (newest first)
-    feedbackList.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    setFeedbacks(feedbackList);
+    const unsub = FeedbackService.subscribe((rows) => {
+      const feedbackList: FeedbackData[] = (rows as Record<string, unknown>[]).map((r) => ({
+        id: String(r.id ?? ''),
+        rating: Number(r.rating) || 0,
+        comment: String(r.comment ?? ''),
+        itemName: String(r.itemName ?? ''),
+        timestamp: toIso(r.createdAt),
+        orderId: String(r.feedbackKey ?? r.id ?? ''),
+      }));
+      feedbackList.sort(
+        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      setFeedbacks(feedbackList);
+    });
+    return () => unsub();
   }, []);
 
   const getAverageRating = () => {
@@ -144,8 +165,8 @@ const FeedbackManagement = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {feedbacks.map((feedback, index) => (
-                <div key={index} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              {feedbacks.map((feedback) => (
+                <div key={feedback.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-gray-900">{feedback.itemName}</span>

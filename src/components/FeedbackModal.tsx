@@ -5,6 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Star, MessageSquare, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { FeedbackService } from '@/firebase/firestore';
+import { auth } from '@/firebase/config';
 
 interface FeedbackData {
   rating: number;
@@ -39,11 +41,19 @@ const FeedbackModal = ({ itemName, orderId, onFeedback, children }: FeedbackModa
       };
 
       onFeedback(orderId, feedback);
-      
-      // Save to localStorage for demo
-      const existingFeedback = JSON.parse(localStorage.getItem('bitebuzz_feedback') || '{}');
-      existingFeedback[orderId] = { ...feedback, itemName, timestamp: new Date().toISOString() };
-      localStorage.setItem('bitebuzz_feedback', JSON.stringify(existingFeedback));
+
+      const result = await FeedbackService.create({
+        feedbackKey: orderId,
+        itemName,
+        rating: feedback.rating,
+        comment: feedback.comment,
+        customerEmail: auth.currentUser?.email || null,
+      });
+
+      if (!result.success) {
+        toast.error('Could not save feedback. Please try again.');
+        return;
+      }
 
       toast.success('Thank you for your feedback! 🌟');
       setIsOpen(false);

@@ -7,9 +7,10 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Menu items - authenticated users can read/write
+    // Menu — public read (home page / cart for guests); writes require sign-in
     match /menu/{menuId} {
-      allow read, write: if request.auth != null;
+      allow read: if true;
+      allow write: if request.auth != null;
     }
     
     // Orders - authenticated users can read/write

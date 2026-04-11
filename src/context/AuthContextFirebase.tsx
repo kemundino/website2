@@ -85,39 +85,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               lastLogin: new Date()
             });
           } else {
-            console.log('⚠️ User profile not found in Firestore, creating fallback user');
-            // Create a basic user profile from Firebase auth data
-            const fallbackUser: User = {
-              id: firebaseUser.uid,
-              name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
-              email: firebaseUser.email || '',
-              avatar: firebaseUser.photoURL || undefined,
-              role: 'customer', // Default role for new users
-              emailVerified: firebaseUser.emailVerified || false
-            };
-            setUser(fallbackUser);
-            console.log('✅ Fallback user profile created');
-            
-            // Try to create the Firestore profile
-            try {
-              await authService.signUp(firebaseUser.email || '', '', fallbackUser.name, 'customer');
-            } catch (createErr) {
-              console.warn('Could not create Firestore profile:', createErr);
-            }
+            console.error('❌ Failed to load user profile');
+            setError('Failed to load user profile');
+            await authService.signOut();
           }
         } catch (err) {
           console.error('❌ Error loading user profile:', err);
-          // Don't sign out immediately, create fallback user
-          const fallbackUser: User = {
-            id: firebaseUser.uid,
-            name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
-            email: firebaseUser.email || '',
-            avatar: firebaseUser.photoURL || undefined,
-            role: 'customer', // Default role for new users
-            emailVerified: firebaseUser.emailVerified || false
-          };
-          setUser(fallbackUser);
-          console.log('✅ Emergency fallback user created due to error');
+          setError('Error loading user profile');
+          await authService.signOut();
         }
       } else {
         console.log('🔓 No authenticated user');

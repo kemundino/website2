@@ -134,18 +134,42 @@ class AuthService {
   // Get user profile from Firestore
   async getUserProfile(uid: string): Promise<{ success: boolean; profile?: UserProfile; error?: string }> {
     try {
+      const normalizeProfile = (data: Record<string, unknown>, authUid: string): UserProfile | null => {
+        const email = data.email as string | undefined;
+        const rawRole = data.role as string | undefined;
+        if (!email) return null;
+
+        let role: 'admin' | 'customer';
+        if (rawRole === 'admin') role = 'admin';
+        else if (rawRole === 'customer' || rawRole === 'user') role = 'customer';
+        else if (rawRole) {
+          console.warn('Unknown role in Firestore profile; defaulting to customer:', rawRole);
+          role = 'customer';
+        } else {
+          return null;
+        }
+
+        const docUid = typeof data.uid === 'string' && data.uid ? data.uid : authUid;
+        return { ...(data as unknown as UserProfile), uid: docUid, email, role };
+      };
+
       const result = await UserService.getOne(uid);
       if (result.success && result.data) {
-        // Validate that the result has required UserProfile properties
-        const data = result.data as any;
-        if (data.uid && data.email && data.role) {
-          return { success: true, profile: data as UserProfile };
-        } else {
-          return { success: false, error: 'Invalid user profile structure' };
-        }
-      } else {
-        return { success: false, error: 'User profile not found' };
+        const profile = normalizeProfile(result.data as Record<string, unknown>, uid);
+        if (profile) return { success: true, profile };
+        return { success: false, error: 'Invalid user profile structure' };
       }
+
+      // Legacy: profile was saved with addDoc (random doc id) but field `uid` matches Auth.
+      const legacy = await UserService.getByUidField(uid);
+      if (legacy.success && legacy.data?.length) {
+        const row = legacy.data[0] as Record<string, unknown>;
+        const profile = normalizeProfile(row, uid);
+        if (profile) return { success: true, profile };
+        return { success: false, error: 'Invalid user profile structure' };
+      }
+
+      return { success: false, error: 'User profile not found' };
     } catch (error: any) {
       console.error('Get user profile error:', error);
       return { success: false, error: error.message || 'Failed to get user profile' };

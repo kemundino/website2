@@ -1,6 +1,6 @@
 import { db } from './config';
 import { 
-  collection, doc, addDoc, updateDoc, deleteDoc, getDoc, getDocs,
+  collection, doc, addDoc, setDoc, updateDoc, deleteDoc, getDoc, getDocs,
   query, where, orderBy, onSnapshot, serverTimestamp
 } from 'firebase/firestore';
 
@@ -17,6 +17,22 @@ export class FirestoreService {
       return { success: true, id: docRef.id };
     } catch (error) {
       console.error('Error creating document:', error);
+      return { success: false, error };
+    }
+  }
+
+  /** Create or replace a document with a fixed id (e.g. user profile keyed by Firebase Auth uid). */
+  static async setDocument(collectionName: string, docId: string, data: any) {
+    try {
+      const docRef = doc(db, collectionName, docId);
+      await setDoc(docRef, {
+        ...data,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      return { success: true, id: docId };
+    } catch (error) {
+      console.error('Error setting document:', error);
       return { success: false, error };
     }
   }
@@ -158,9 +174,18 @@ export const MenuService = {
 };
 
 export const UserService = {
-  create: (userData: any) => FirestoreService.create('users', userData),
+  create: async (userData: any) => {
+    if (!userData?.uid) {
+      console.error('UserService.create: uid is required to match Firebase Auth');
+      return { success: false, error: 'User profile requires uid' };
+    }
+    return FirestoreService.setDocument('users', userData.uid, userData);
+  },
   update: (userId: string, userData: any) => FirestoreService.update('users', userId, userData),
   getOne: (userId: string) => FirestoreService.getOne('users', userId),
+  /** Legacy profiles created with addDoc live under a random id but still have field `uid`. */
+  getByUidField: (uid: string) =>
+    FirestoreService.query('users', [where('uid', '==', uid)]),
   getByEmail: (email: string) => 
     FirestoreService.query('users', [where('email', '==', email)]),
   subscribe: (callback: (data: any[]) => void) => 

@@ -130,50 +130,54 @@ const OrdersPage = () => {
                 className="rounded-2xl border border-border bg-card p-6 shadow-card"
               >
                 <div className="mb-4 flex flex-col gap-3">
-                  <div>
-                    <span className="text-xs text-muted-foreground">Order #{order.id}</span>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(order.createdAt).toLocaleDateString("en-US", {
-                        month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <div className={`flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-medium ${status.color} w-fit`}>
-                      <StatusIcon className="h-4 w-4" />
-                      {status.label}
+                  <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2">
+                    <div>
+                      <span className="text-xs text-muted-foreground font-medium">Order #{order.id}</span>
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                        {new Date(order.createdAt).toLocaleDateString("en-US", {
+                          month: "short", day: "numeric", year: "numeric", 
+                          hour: "2-digit", minute: "2-digit",
+                        })}
+                      </p>
                     </div>
-                    
-                    <div className="flex gap-2">
+                    <div className={`flex items-center gap-1.5 rounded-full bg-muted px-2 py-1 text-xs sm:text-sm font-medium ${status.color} w-fit`}>
+                      <StatusIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden xs:inline">{status.label}</span>
+                      <span className="xs:hidden">{status.label.split(' ')[0]}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div className="flex flex-col xs:flex-row gap-2 xs:gap-3 w-full sm:w-auto">
                       {/* Show confirmation button for awaiting_confirmation orders */}
                       {order.status === 'awaiting_confirmation' && (
                         <Button 
                           onClick={() => handleConfirmDelivery(order.id)}
                           disabled={confirmingOrderId === order.id}
-                          className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-none"
+                          className="bg-green-600 hover:bg-green-700 text-white flex-1 xs:flex-none"
                           size="sm"
                         >
                           {confirmingOrderId === order.id ? (
                             <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                              <span className="hidden sm:inline">Confirming...</span>
-                              <span className="sm:hidden">...</span>
+                              <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white mr-1 sm:mr-2"></div>
+                              <span className="hidden xs:inline">Confirming...</span>
+                              <span className="xs:hidden">...</span>
                             </>
                           ) : (
                             <>
-                              <CheckCircle2 className="h-4 w-4 mr-2" />
-                              <span className="hidden sm:inline">Confirm Delivery</span>
-                              <span className="sm:hidden">Confirm</span>
+                              <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                              <span className="hidden xs:inline">Confirm Delivery</span>
+                              <span className="xs:hidden">Confirm</span>
                             </>
                           )}
                         </Button>
                       )}
                       
-                      <Link to={`/track/${order.id}`} className="flex-1 sm:flex-none">
+                      <Link to={`/track/${order.id}`} className="flex-1 xs:flex-none">
                         <Button variant="outline" size="sm" className="w-full">
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          <span className="hidden sm:inline">Track</span>
-                          <span className="sm:hidden">Track</span>
+                          <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                          <span className="hidden xs:inline">Track Order</span>
+                          <span className="xs:hidden">Track</span>
                         </Button>
                       </Link>
                     </div>
@@ -194,10 +198,10 @@ const OrdersPage = () => {
 
                 <div className="space-y-2 text-sm text-muted-foreground">
                   {order.items.map((item: { name: string; quantity: number; price: number }, i: number) => (
-                    <div key={i} className="flex flex-col gap-1 p-2 bg-gray-50 rounded-lg">
-                      <div className="flex justify-between items-start">
-                        <span className="font-medium text-foreground">{item.quantity}x {item.name}</span>
-                        <span className="font-medium text-foreground">${(item.price * item.quantity).toFixed(2)}</span>
+                    <div key={i} className="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg">
+                      <div className="flex justify-between items-start gap-2">
+                        <span className="font-medium text-foreground text-sm flex-1">{item.quantity}x {item.name}</span>
+                        <span className="font-medium text-foreground text-sm whitespace-nowrap">${(item.price * item.quantity).toFixed(2)}</span>
                       </div>
                       
                       {/* Feedback section directly under each item for delivered orders */}
@@ -208,9 +212,10 @@ const OrdersPage = () => {
                             orderId={`${order.id}_${item.name}`}
                             onFeedback={handleFeedback}
                           >
-                            <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50 h-7 text-xs w-full">
+                            <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50 h-8 text-xs w-full">
                               <MessageSquare className="h-3 w-3 mr-1" />
-                              Rate this item
+                              <span className="hidden sm:inline">Rate this item</span>
+                              <span className="sm:hidden">Rate</span>
                             </Button>
                           </FeedbackModal>
                         </div>
@@ -219,16 +224,20 @@ const OrdersPage = () => {
                         {order.status === 'delivered' && checkIfFeedbackGiven(`${order.id}_${item.name}`) && (
                           <div className="mt-2 flex items-center gap-1 text-green-600 text-xs">
                             <CheckCircle2 className="h-3 w-3" />
-                            <span>Feedback submitted</span>
+                            <span className="hidden sm:inline">Feedback submitted</span>
+                            <span className="sm:hidden">Rated</span>
                           </div>
                         )}
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-                  <span className="text-xs text-muted-foreground">📍 {order.deliveryAddress}</span>
-                  <span className="font-bold text-foreground">${order.total.toFixed(2)}</span>
+                <div className="mt-4 flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2 border-t border-border pt-3">
+                  <span className="text-xs text-muted-foreground flex-1">📍 {order.deliveryAddress}</span>
+                  <div className="flex items-center justify-between xs:justify-end gap-2 w-full xs:w-auto">
+                    <span className="text-xs text-muted-foreground xs:hidden">Total:</span>
+                    <span className="font-bold text-foreground text-base sm:text-lg">${order.total.toFixed(2)}</span>
+                  </div>
                 </div>
               </motion.div>
             );

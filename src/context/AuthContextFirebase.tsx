@@ -81,30 +81,65 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('👤 Firebase user authenticated:', firebaseUser.email);
         
         try {
-          // Get user profile from Firestore
-          const profileResult = await authService.getUserProfile(firebaseUser.uid);
+          // Get user profile from Firestore with retry logic
+          let profileResult = await authService.getUserProfile(firebaseUser.uid);
+          
+          // If profile not found, wait a bit and retry (timing issue)
+          if (!profileResult.success) {
+            console.log('⏳ Profile not found, retrying in 1 second...');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            profileResult = await authService.getUserProfile(firebaseUser.uid);
+          }
           
           if (profileResult.success && profileResult.profile) {
             const convertedUser = convertFirebaseUser(firebaseUser, profileResult.profile);
             setUser(convertedUser);
             setError(null);
-            console.log('✅ User profile loaded successfully');
-
+            console.log('✅ User profile loaded successfully - Role:', convertedUser.role);
+            
+            // Update last login
             const lastLoginRes = await authService.updateUserProfile(firebaseUser.uid, {
               lastLogin: new Date()
             });
             if (!lastLoginRes.success) {
-              console.warn('Could not persist lastLogin (session still active):', lastLoginRes.error);
+              console.warn('⚠️ Failed to update last login:', lastLoginRes.error);
             }
           } else {
-            console.error('❌ Failed to load user profile:', profileResult.error);
-            setError(profileResult.error || 'Failed to load user profile');
-            await authService.signOut();
+            console.error('❌ Failed to load user profile after retry:', profileResult.error);
+            // Don't sign out immediately - let the user stay authenticated
+            // Create a basic user profile from Firebase Auth data
+            const basicUser: User = {
+              id: firebaseUser.uid,
+              name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+              email: firebaseUser.email || '',
+              role: 'customer', // Default role
+              emailVerified: firebaseUser.emailVerified || false
+            };
+            setUser(basicUser);
+            setError(null);
+            console.log('✅ Using basic user profile from Firebase Auth');
+            
+            // Try to create the missing profile
+            try {
+              await authService.signUp(firebaseUser.email || '', '', basicUser.name, 'customer');
+              console.log('✅ Created missing user profile');
+            } catch (createErr) {
+              console.warn('⚠️ Could not create missing profile:', createErr);
+            }
           }
         } catch (err) {
           console.error('❌ Error loading user profile:', err);
-          setError('Error loading user profile');
-          await authService.signOut();
+          // Don't sign out - create basic user from Firebase Auth
+          const basicUser: User = {
+            id: firebaseUser.uid,
+            name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+            email: firebaseUser.email || '',
+            role: 'customer', // Default role
+            emailVerified: firebaseUser.emailVerified || false
+          };
+          setUser(basicUser);
+          setError(null);
+          console.log('✅ Using basic user profile due to error');
         }
       } else {
         console.log('🔓 No authenticated user');

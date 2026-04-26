@@ -72,13 +72,7 @@ const LiveOrders = () => {
 
     return (
       <div className="space-y-6">
-        {/* Debug Info */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-blue-800 font-medium">🔍 Debug Info:</p>
-          <p className="text-blue-700 text-sm">Orders found: {orders?.length || 0}</p>
-          <p className="text-blue-700 text-sm">Active orders: {activeOrders}</p>
-          <p className="text-blue-700 text-sm">Total revenue: ${totalRevenue.toFixed(2)}</p>
-        </div>
+
         
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -135,21 +129,21 @@ const LiveOrders = () => {
               <div className="space-y-4">
                 {orders.map((order) => (
                   <div key={order.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-3">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-3 flex-wrap">
                           <p className="font-semibold">Order #{order.id}</p>
-                          <p className="text-sm text-muted-foreground">{order.customerName}</p>
+                          <Badge className={getStatusColor(order.status)}>
+                            <div className="flex items-center gap-1">
+                              {getStatusIcon(order.status)}
+                              {getStatusText(order.status)}
+                            </div>
+                          </Badge>
                         </div>
-                        <Badge className={getStatusColor(order.status)}>
-                          <div className="flex items-center gap-1">
-                            {getStatusIcon(order.status)}
-                            {getStatusText(order.status)}
-                          </div>
-                        </Badge>
+                        <p className="text-sm text-muted-foreground">{order.customerName}</p>
                       </div>
                       
-                      <div className="text-right">
+                      <div className="text-left sm:text-right">
                         <p className="font-bold">${order.total.toFixed(2)}</p>
                         <p className="text-sm text-muted-foreground">
                           {new Date(order.createdAt).toLocaleTimeString()}
@@ -168,21 +162,21 @@ const LiveOrders = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm text-muted-foreground">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pt-2 border-t">
+                      <div className="text-sm text-muted-foreground break-words">
                         📍 {order.deliveryAddress}
                         {order.customerConfirmed && (
                           <span className="ml-2 text-green-600">✓ Customer confirmed delivery</span>
                         )}
                       </div>
                       
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <Select
                           value={order.status}
                           onValueChange={(value) => handleStatusChange(order.id, value)}
                           disabled={order.status === 'delivered'}
                         >
-                          <SelectTrigger className="w-32 sm:w-40">
+                          <SelectTrigger className="w-40">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>

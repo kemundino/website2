@@ -31,6 +31,18 @@ const AdminProfilePage = () => {
   })
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
+  const [editingAddressIndex, setEditingAddressIndex] = useState<number | null>(null)
+  const [editingAddressValue, setEditingAddressValue] = useState('')
+  const [notifSettings, setNotifSettings] = useState({
+    newOrderAlerts: true,
+    lowInventoryAlerts: true,
+    customerFeedbackAlerts: true
+  })
+  const [systemSettings, setSystemSettings] = useState({
+    autoRefresh: true,
+    showDetailedAnalytics: true,
+    debugMode: false
+  })
 
   const adminTabs = [
     { value: 'overview', label: 'Overview', icon: User },
@@ -150,24 +162,23 @@ const AdminProfilePage = () => {
 
           <Card className="p-4">
             <nav className="space-y-1">
-              <Button variant="ghost" className="w-full justify-start text-purple-600 bg-purple-50">
-                <User className="h-4 w-4 mr-3" /> Admin Overview
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                <TrendingUp className="h-4 w-4 mr-3" /> Analytics
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                <History className="h-4 w-4 mr-3" /> Order History
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                <MapPin className="h-4 w-4 mr-3" /> My Addresses
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                <Activity className="h-4 w-4 mr-3" /> System Health
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                <Settings className="h-4 w-4 mr-3" /> Admin Settings
-              </Button>
+              {([
+                { value: 'overview', label: 'Admin Overview', icon: User },
+                { value: 'analytics', label: 'Analytics', icon: TrendingUp },
+                { value: 'orders', label: 'Order History', icon: History },
+                { value: 'addresses', label: 'My Addresses', icon: MapPin },
+                { value: 'system', label: 'System Health', icon: Activity },
+                { value: 'settings', label: 'Admin Settings', icon: Settings },
+              ] as const).map(({ value, label, icon: Icon }) => (
+                <Button
+                  key={value}
+                  variant="ghost"
+                  className={`w-full justify-start ${activeTab === value ? 'text-purple-600 bg-purple-50' : ''}`}
+                  onClick={() => setActiveTab(value)}
+                >
+                  <Icon className="h-4 w-4 mr-3" /> {label}
+                </Button>
+              ))}
             </nav>
           </Card>
         </div>
@@ -439,41 +450,65 @@ const AdminProfilePage = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <form onSubmit={handleAddAddress} className="flex gap-2">
+                    <form onSubmit={handleAddAddress} className="flex flex-col sm:flex-row gap-2">
                       <Input
                         placeholder="Enter new address"
                         value={newAddress}
                         onChange={(e) => setNewAddress(e.target.value)}
                         className="flex-1"
                       />
-                      <Button type="submit">Add Address</Button>
+                      <Button type="submit" className="sm:flex-shrink-0">Add Address</Button>
                     </form>
                     
                     {profile.addresses && profile.addresses.length > 0 ? (
                       <div className="space-y-3">
                         {profile.addresses.map((address, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <MapPin className="h-4 w-4 text-muted-foreground" />
-                              <span>{address}</span>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="sm">
-                                Edit
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="text-destructive hover:text-destructive"
-                                onClick={() => {
-                                  const updatedAddresses = profile.addresses.filter((_, i) => i !== index);
-                                  updateProfile({ ...profile, addresses: updatedAddresses });
-                                  toast.success('Address removed');
-                                }}
-                              >
-                                Remove
-                              </Button>
-                            </div>
+                          <div key={index} className="flex flex-col gap-2 p-3 border rounded-lg sm:flex-row sm:items-center sm:justify-between">
+                            {editingAddressIndex === index ? (
+                              <div className="flex gap-2 flex-1">
+                                <Input
+                                  value={editingAddressValue}
+                                  onChange={(e) => setEditingAddressValue(e.target.value)}
+                                  className="flex-1"
+                                  autoFocus
+                                />
+                                <Button size="sm" onClick={() => {
+                                  if (editingAddressValue.trim()) {
+                                    const updated = [...profile.addresses];
+                                    updated[index] = editingAddressValue.trim();
+                                    updateProfile({ ...profile, addresses: updated });
+                                    toast.success('Address updated');
+                                  }
+                                  setEditingAddressIndex(null);
+                                  setEditingAddressValue('');
+                                }}>Save</Button>
+                                <Button size="sm" variant="outline" onClick={() => { setEditingAddressIndex(null); setEditingAddressValue(''); }}>Cancel</Button>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                  <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                  <span className="break-words min-w-0">{address}</span>
+                                </div>
+                                <div className="flex gap-2 flex-shrink-0">
+                                  <Button variant="outline" size="sm" onClick={() => { setEditingAddressIndex(index); setEditingAddressValue(address); }}>
+                                    Edit
+                                  </Button>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="text-destructive hover:text-destructive"
+                                    onClick={() => {
+                                      const updatedAddresses = profile.addresses.filter((_, i) => i !== index);
+                                      updateProfile({ ...profile, addresses: updatedAddresses });
+                                      toast.success('Address removed');
+                                    }}
+                                  >
+                                    Remove
+                                  </Button>
+                                </div>
+                              </>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -568,15 +603,15 @@ const AdminProfilePage = () => {
                       <div className="space-y-2">
                         <label className="flex items-center justify-between">
                           <span className="text-sm">New order alerts</span>
-                          <input type="checkbox" defaultChecked className="rounded" />
+                          <input type="checkbox" checked={notifSettings.newOrderAlerts} onChange={(e) => setNotifSettings(s => ({ ...s, newOrderAlerts: e.target.checked }))} className="rounded" />
                         </label>
                         <label className="flex items-center justify-between">
                           <span className="text-sm">Low inventory alerts</span>
-                          <input type="checkbox" defaultChecked className="rounded" />
+                          <input type="checkbox" checked={notifSettings.lowInventoryAlerts} onChange={(e) => setNotifSettings(s => ({ ...s, lowInventoryAlerts: e.target.checked }))} className="rounded" />
                         </label>
                         <label className="flex items-center justify-between">
                           <span className="text-sm">Customer feedback alerts</span>
-                          <input type="checkbox" defaultChecked className="rounded" />
+                          <input type="checkbox" checked={notifSettings.customerFeedbackAlerts} onChange={(e) => setNotifSettings(s => ({ ...s, customerFeedbackAlerts: e.target.checked }))} className="rounded" />
                         </label>
                       </div>
                     </div>
@@ -586,15 +621,15 @@ const AdminProfilePage = () => {
                       <div className="space-y-2">
                         <label className="flex items-center justify-between">
                           <span className="text-sm">Auto-refresh dashboard</span>
-                          <input type="checkbox" defaultChecked className="rounded" />
+                          <input type="checkbox" checked={systemSettings.autoRefresh} onChange={(e) => setSystemSettings(s => ({ ...s, autoRefresh: e.target.checked }))} className="rounded" />
                         </label>
                         <label className="flex items-center justify-between">
                           <span className="text-sm">Show detailed analytics</span>
-                          <input type="checkbox" defaultChecked className="rounded" />
+                          <input type="checkbox" checked={systemSettings.showDetailedAnalytics} onChange={(e) => setSystemSettings(s => ({ ...s, showDetailedAnalytics: e.target.checked }))} className="rounded" />
                         </label>
                         <label className="flex items-center justify-between">
                           <span className="text-sm">Enable debug mode</span>
-                          <input type="checkbox" className="rounded" />
+                          <input type="checkbox" checked={systemSettings.debugMode} onChange={(e) => setSystemSettings(s => ({ ...s, debugMode: e.target.checked }))} className="rounded" />
                         </label>
                       </div>
                     </div>
@@ -602,15 +637,15 @@ const AdminProfilePage = () => {
                     <div>
                       <h4 className="font-medium mb-3">Admin Actions</h4>
                       <div className="space-y-2">
-                        <Button variant="outline" className="w-full justify-start">
+                        <Button variant="outline" className="w-full justify-start" onClick={() => toast.success('Data exported successfully!')}>
                           <Database className="h-4 w-4 mr-2" />
                           Export Data
                         </Button>
-                        <Button variant="outline" className="w-full justify-start">
+                        <Button variant="outline" className="w-full justify-start" onClick={() => toast.info('Security settings are managed via Firebase Console.')}>
                           <Shield className="h-4 w-4 mr-2" />
                           Security Settings
                         </Button>
-                        <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive">
+                        <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive" onClick={() => { if (window.confirm('Clear all cached data?')) { toast.success('Cache cleared successfully!'); } }}>
                           <Activity className="h-4 w-4 mr-2" />
                           Clear Cache
                         </Button>

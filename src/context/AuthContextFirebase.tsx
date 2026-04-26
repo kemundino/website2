@@ -380,7 +380,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (result.success) {
         setUser(null);
-        setOrders([]);
         setError(null);
         toast.success('Logged out successfully');
         console.log('✅ Logout successful');
@@ -392,7 +391,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('❌ Logout error:', err);
       // Force logout even if Firebase fails
       setUser(null);
-      setOrders([]);
       setError(null);
       toast.success('Logged out');
     }

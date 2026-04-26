@@ -34,6 +34,17 @@ const CustomerProfilePage = () => {
   })
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
+  const [editingAddressIndex, setEditingAddressIndex] = useState<number | null>(null)
+  const [editingAddressValue, setEditingAddressValue] = useState('')
+  const [notifSettings, setNotifSettings] = useState({
+    orderUpdates: true,
+    promotionalOffers: true,
+    loyaltyUpdates: false
+  })
+  const [privacySettings, setPrivacySettings] = useState({
+    shareOrderHistory: false,
+    personalizedRecommendations: true
+  })
 
   const customerTabs = [
     { value: 'overview', label: 'Overview', icon: User },
@@ -125,21 +136,22 @@ const CustomerProfilePage = () => {
 
           <Card className="p-4">
             <nav className="space-y-1">
-              <Button variant="ghost" className="w-full justify-start text-orange-600 bg-orange-50">
-                <User className="h-4 w-4 mr-3" /> Profile Overview
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                <History className="h-4 w-4 mr-3" /> Order History
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                <MapPin className="h-4 w-4 mr-3" /> My Addresses
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                <Award className="h-4 w-4 mr-3" /> Rewards
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                <Settings className="h-4 w-4 mr-3" /> Settings
-              </Button>
+              {([
+                { value: 'overview', label: 'Profile Overview', icon: User },
+                { value: 'orders', label: 'Order History', icon: History },
+                { value: 'addresses', label: 'My Addresses', icon: MapPin },
+                { value: 'rewards', label: 'Rewards', icon: Award },
+                { value: 'settings', label: 'Settings', icon: Settings },
+              ] as const).map(({ value, label, icon: Icon }) => (
+                <Button
+                  key={value}
+                  variant="ghost"
+                  className={`w-full justify-start ${activeTab === value ? 'text-orange-600 bg-orange-50' : ''}`}
+                  onClick={() => setActiveTab(value)}
+                >
+                  <Icon className="h-4 w-4 mr-3" /> {label}
+                </Button>
+              ))}
             </nav>
           </Card>
         </div>
@@ -418,41 +430,65 @@ const CustomerProfilePage = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <form onSubmit={handleAddAddress} className="flex gap-2">
+                    <form onSubmit={handleAddAddress} className="flex flex-col sm:flex-row gap-2">
                       <Input
                         placeholder="Enter new address"
                         value={newAddress}
                         onChange={(e) => setNewAddress(e.target.value)}
                         className="flex-1"
                       />
-                      <Button type="submit">Add Address</Button>
+                      <Button type="submit" className="sm:flex-shrink-0">Add Address</Button>
                     </form>
                     
                     {profile.addresses && profile.addresses.length > 0 ? (
                       <div className="space-y-3">
                         {profile.addresses.map((address, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <MapPin className="h-4 w-4 text-muted-foreground" />
-                              <span>{address}</span>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="sm">
-                                Edit
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="text-destructive hover:text-destructive"
-                                onClick={() => {
-                                  const updatedAddresses = profile.addresses.filter((_, i) => i !== index);
-                                  updateProfile({ ...profile, addresses: updatedAddresses });
-                                  toast.success('Address removed');
-                                }}
-                              >
-                                Remove
-                              </Button>
-                            </div>
+                          <div key={index} className="flex flex-col gap-2 p-3 border rounded-lg sm:flex-row sm:items-center sm:justify-between">
+                            {editingAddressIndex === index ? (
+                              <div className="flex gap-2 flex-1">
+                                <Input
+                                  value={editingAddressValue}
+                                  onChange={(e) => setEditingAddressValue(e.target.value)}
+                                  className="flex-1"
+                                  autoFocus
+                                />
+                                <Button size="sm" onClick={() => {
+                                  if (editingAddressValue.trim()) {
+                                    const updated = [...profile.addresses];
+                                    updated[index] = editingAddressValue.trim();
+                                    updateProfile({ ...profile, addresses: updated });
+                                    toast.success('Address updated');
+                                  }
+                                  setEditingAddressIndex(null);
+                                  setEditingAddressValue('');
+                                }}>Save</Button>
+                                <Button size="sm" variant="outline" onClick={() => { setEditingAddressIndex(null); setEditingAddressValue(''); }}>Cancel</Button>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                  <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                  <span className="break-words min-w-0">{address}</span>
+                                </div>
+                                <div className="flex gap-2 flex-shrink-0">
+                                  <Button variant="outline" size="sm" onClick={() => { setEditingAddressIndex(index); setEditingAddressValue(address); }}>
+                                    Edit
+                                  </Button>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="text-destructive hover:text-destructive"
+                                    onClick={() => {
+                                      const updatedAddresses = profile.addresses.filter((_, i) => i !== index);
+                                      updateProfile({ ...profile, addresses: updatedAddresses });
+                                      toast.success('Address removed');
+                                    }}
+                                  >
+                                    Remove
+                                  </Button>
+                                </div>
+                              </>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -533,15 +569,15 @@ const CustomerProfilePage = () => {
                       <div className="space-y-2">
                         <label className="flex items-center justify-between">
                           <span className="text-sm">Order updates</span>
-                          <input type="checkbox" defaultChecked className="rounded" />
+                          <input type="checkbox" checked={notifSettings.orderUpdates} onChange={(e) => setNotifSettings(s => ({ ...s, orderUpdates: e.target.checked }))} className="rounded" />
                         </label>
                         <label className="flex items-center justify-between">
                           <span className="text-sm">Promotional offers</span>
-                          <input type="checkbox" defaultChecked className="rounded" />
+                          <input type="checkbox" checked={notifSettings.promotionalOffers} onChange={(e) => setNotifSettings(s => ({ ...s, promotionalOffers: e.target.checked }))} className="rounded" />
                         </label>
                         <label className="flex items-center justify-between">
                           <span className="text-sm">Loyalty program updates</span>
-                          <input type="checkbox" className="rounded" />
+                          <input type="checkbox" checked={notifSettings.loyaltyUpdates} onChange={(e) => setNotifSettings(s => ({ ...s, loyaltyUpdates: e.target.checked }))} className="rounded" />
                         </label>
                       </div>
                     </div>
@@ -551,11 +587,11 @@ const CustomerProfilePage = () => {
                       <div className="space-y-2">
                         <label className="flex items-center justify-between">
                           <span className="text-sm">Share order history</span>
-                          <input type="checkbox" className="rounded" />
+                          <input type="checkbox" checked={privacySettings.shareOrderHistory} onChange={(e) => setPrivacySettings(s => ({ ...s, shareOrderHistory: e.target.checked }))} className="rounded" />
                         </label>
                         <label className="flex items-center justify-between">
                           <span className="text-sm">Personalized recommendations</span>
-                          <input type="checkbox" defaultChecked className="rounded" />
+                          <input type="checkbox" checked={privacySettings.personalizedRecommendations} onChange={(e) => setPrivacySettings(s => ({ ...s, personalizedRecommendations: e.target.checked }))} className="rounded" />
                         </label>
                       </div>
                     </div>
@@ -563,10 +599,11 @@ const CustomerProfilePage = () => {
                     <div>
                       <h4 className="font-medium mb-3">Account Actions</h4>
                       <div className="space-y-2">
-                        <Button variant="outline" className="w-full justify-start">
+                        <Button variant="outline" className="w-full justify-start" onClick={() => toast.info('Your data export has been requested. You will receive an email shortly.')}
+                        >
                           Download my data
                         </Button>
-                        <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive">
+                        <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive" onClick={() => toast.error('To delete your account, please contact support@bitebuzz.com')}>
                           Delete account
                         </Button>
                       </div>

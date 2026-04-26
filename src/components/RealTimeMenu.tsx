@@ -31,11 +31,11 @@ const RealTimeMenu = () => {
   return (
     <div className="container py-8 md:py-12">
       {/* Header */}
-      <div className="text-center mb-12">
-        <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
+      <div className="text-center mb-6 sm:mb-12">
+        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-3">
           Our Menu
         </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
           Discover our amazing dishes made just for you
         </p>
       </div>

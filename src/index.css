@@ -91,14 +91,30 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground text-base md:text-lg antialiased;
     font-family: var(--font-body);
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
     overflow-x: hidden;
   }
 
-  h1, h2, h3, h4 {
+  h1 {
+    @apply text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight;
+    font-family: var(--font-display);
+  }
+
+  h2 {
+    @apply text-2xl md:text-4xl lg:text-5xl font-bold tracking-tight;
+    font-family: var(--font-display);
+  }
+
+  h3 {
+    @apply text-xl md:text-3xl lg:text-4xl font-semibold;
+    font-family: var(--font-display);
+  }
+
+  h4 {
+    @apply text-lg md:text-2xl font-semibold;
     font-family: var(--font-display);
   }
 
@@ -162,5 +178,19 @@
       padding-left: 1rem !important;
       padding-right: 1rem !important;
     }
+  }
+
+  /* Custom Scrollbar */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-border/50 rounded-full;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-border;
   }
 }

@@ -162,15 +162,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
           if (adminUsers.length > 1) {
             console.log(`⚠️ Found ${adminUsers.length} admins. Automatically fixing to ensure only ONE admin exists...`);
-            // Determine which admin to keep. If a currentUserUid is passed, keep that one. 
-            // Otherwise, keep the first one we found.
-            const keepUid = currentUserUid && adminUsers.some(a => a.uid === currentUserUid) 
-              ? currentUserUid 
-              : adminUsers[0].uid;
+            
+            // Sort admins by creation date (oldest first) to find the ORIGINAL admin
+            const sortedAdmins = [...adminUsers].sort((a, b) => {
+              const dateA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : new Date(a.createdAt || 0).getTime();
+              const dateB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : new Date(b.createdAt || 0).getTime();
+              return dateA - dateB;
+            });
+            
+            // The oldest admin is the true owner.
+            const trueAdminUid = sortedAdmins[0].uid;
               
-            // Demote all others
+            // Demote all others (impostors/duplicates)
             for (const admin of adminUsers) {
-              if (admin.uid !== keepUid) {
+              if (admin.uid !== trueAdminUid) {
                 console.log(`Demoting extra admin: ${admin.email} (${admin.uid})`);
                 await UserService.update(admin.uid, { role: 'customer', isAdmin: false });
               }

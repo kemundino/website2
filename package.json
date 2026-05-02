@@ -7,7 +7,6 @@
     "dev": "vite",
     "build": "npx vite build",
     "build:dev": "npx vite build --mode development",
-    "build:render": "npx vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "npm run preview"

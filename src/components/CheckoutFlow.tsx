@@ -390,37 +390,7 @@ const CheckoutFlow = () => {
                       </Button>
                     </div>
                     
-                    {/* Debug Test Button */}
-                    <div className="mt-4 pt-4 border-t">
-                      <Button 
-                        type="button" 
-                        variant="destructive" 
-                        onClick={async () => {
-                          console.log('TEST: Direct order creation')
-                          const testOrder = {
-                            customerName: user?.name || 'Test Customer',
-                            items: cartItems.map(item => ({
-                              name: item.name,
-                              quantity: item.quantity,
-                              price: item.price
-                            })),
-                            total: totalPrice + 2.99 + (totalPrice * 0.08),
-                            status: 'pending' as const,
-                            deliveryAddress: 'Test Address'
-                          }
-                          try {
-                            const newOrder = await addOrder(testOrder)
-                            console.log('TEST: Order created:', newOrder)
-                            toast.success('Test order created!')
-                          } catch {
-                            toast.error('Test order failed')
-                          }
-                        }}
-                        className="w-full"
-                      >
-                        🧪 TEST: Create Order Directly
-                      </Button>
-                    </div>
+
                   </form>
                 </CardContent>
               </Card>

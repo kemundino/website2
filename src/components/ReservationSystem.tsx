@@ -845,11 +845,15 @@ const ReservationForm = ({
             <SelectValue placeholder="Select an available table" />
           </SelectTrigger>
           <SelectContent>
-            {availableTables.map((table) => (
-              <SelectItem key={table.id} value={table.id}>
-                Table {table.number} ({table.capacity} seats)
-              </SelectItem>
-            ))}
+            {availableTables.length > 0 ? (
+              availableTables.map((table) => (
+                <SelectItem key={table.id} value={table.id}>
+                  Table {table.number} ({table.capacity} seats)
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="none" disabled>No tables available</SelectItem>
+            )}
           </SelectContent>
         </Select>
         {availableTables.length === 0 && (
@@ -864,7 +868,7 @@ const ReservationForm = ({
             <SelectValue placeholder="Select occasion" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">None</SelectItem>
+            <SelectItem value="none">None</SelectItem>
             <SelectItem value="Birthday">Birthday</SelectItem>
             <SelectItem value="Anniversary">Anniversary</SelectItem>
             <SelectItem value="Business">Business Dinner</SelectItem>

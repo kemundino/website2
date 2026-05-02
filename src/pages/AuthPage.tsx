@@ -398,7 +398,7 @@ const AuthPage = () => {
             </AnimatePresence>
 
             {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-y-2">
               <label className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"

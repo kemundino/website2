@@ -133,12 +133,12 @@ const OrderTrackingPage = () => {
           Back
         </Button>
         
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Order #{order.id}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Order #{order.id}</h1>
             <p className="text-muted-foreground">Track your order in real-time</p>
           </div>
-          <Badge className={`text-sm px-4 py-2 ${getStatusColor(order.status)}`}>
+          <Badge className={`text-sm px-4 py-2 w-fit ${getStatusColor(order.status)}`}>
             {getStatusText(order.status)}
           </Badge>
         </div>
@@ -206,17 +206,17 @@ const OrderTrackingPage = () => {
               {/* Estimated Delivery */}
               {order.status !== 'delivered' && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center space-x-2 text-blue-700">
-                      <Truck className="h-5 w-5" />
-                      <span className="font-medium">
+                      <Truck className="h-5 w-5 flex-shrink-0" />
+                      <span className="font-medium text-sm sm:text-base">
                         Estimated delivery: {new Date(Date.now() + 30 * 60000).toLocaleTimeString()}
                       </span>
                     </div>
                     {order.status === 'on_the_way' && (
                       <Button 
                         onClick={handleConfirmDelivery}
-                        className="bg-green-600 hover:bg-green-700"
+                        className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
                       >
                         <Check className="h-4 w-4 mr-2" />
                         Confirm Delivery

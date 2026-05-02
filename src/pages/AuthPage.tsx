@@ -225,6 +225,7 @@ const AuthPage = () => {
             <>
               <div className="mb-6 space-y-2">
                 <button
+                  type="button"
                   onClick={() => handleSocialLogin("Google")}
                   className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
                 >
@@ -232,6 +233,7 @@ const AuthPage = () => {
                   Continue with Google
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleSocialLogin("GitHub")}
                   className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
                 >

@@ -730,41 +730,205 @@ const StaffDetails = ({ staff }: { staff: StaffMember }) => {
 // Schedule Manager Component
 const ScheduleManager = ({ staff, shifts }: { staff: StaffMember[], shifts: Shift[] }) => {
   const [selectedWeek, setSelectedWeek] = useState(new Date());
-  
+  const [isAddShiftOpen, setIsAddShiftOpen] = useState(false);
+  const [newShift, setNewShift] = useState({
+    staffId: '',
+    date: new Date().toISOString().split('T')[0],
+    startTime: '09:00',
+    endTime: '17:00',
+    position: ''
+  });
+
+  const getStartOfWeek = (d: Date) => {
+    const date = new Date(d);
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(date.setDate(diff));
+  };
+
+  const startOfWeek = getStartOfWeek(selectedWeek);
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(startOfWeek);
+    d.setDate(d.getDate() + i);
+    return d;
+  });
+
+  const handlePrevWeek = () => {
+    const d = new Date(selectedWeek);
+    d.setDate(d.getDate() - 7);
+    setSelectedWeek(d);
+  };
+
+  const handleNextWeek = () => {
+    const d = new Date(selectedWeek);
+    d.setDate(d.getDate() + 7);
+    setSelectedWeek(d);
+  };
+
+  const handleAddShift = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await addDoc(collection(db, 'shifts'), {
+        ...newShift,
+        status: 'scheduled',
+        createdAt: serverTimestamp()
+      });
+      setIsAddShiftOpen(false);
+      toast.success('Shift assigned successfully');
+    } catch (error) {
+      toast.error('Failed to assign shift');
+    }
+  };
+
+  const handleDeleteShift = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'shifts', id));
+      toast.success('Shift removed');
+    } catch (error) {
+      toast.error('Failed to remove shift');
+    }
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-medium">Weekly Schedule</h3>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">Previous Week</Button>
-          <Button variant="outline" size="sm">Next Week</Button>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 className="text-xl font-black text-slate-900">Weekly Schedule</h3>
+          <p className="text-sm text-slate-500 font-medium">Week of {startOfWeek.toLocaleDateString()}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex border rounded-xl overflow-hidden shadow-sm">
+            <Button variant="ghost" size="icon" onClick={handlePrevWeek} className="rounded-none border-r"><Calendar className="h-4 w-4 rotate-90" /></Button>
+            <Button variant="ghost" size="sm" onClick={() => setSelectedWeek(new Date())} className="rounded-none font-bold px-4">Today</Button>
+            <Button variant="ghost" size="icon" onClick={handleNextWeek} className="rounded-none border-l"><Calendar className="h-4 w-4 -rotate-90" /></Button>
+          </div>
+          
+          <Dialog open={isAddShiftOpen} onOpenChange={setIsAddShiftOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-primary hover:bg-primary/90 text-white font-black rounded-xl shadow-lg shadow-primary/20">
+                <Clock className="h-4 w-4 mr-2" />
+                Assign Shift
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md w-[95vw] max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-black">Assign New Shift</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleAddShift} className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label className="font-bold">Staff Member</Label>
+                  <Select value={newShift.staffId} onValueChange={(v) => setNewShift({...newShift, staffId: v})}>
+                    <SelectTrigger className="h-12 rounded-xl border-2">
+                      <SelectValue placeholder="Select staff..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {staff.map(s => (
+                        <SelectItem key={s.id} value={s.id}>{s.firstName} {s.lastName}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="font-bold">Date</Label>
+                  <Input 
+                    type="date" 
+                    className="h-12 rounded-xl border-2"
+                    value={newShift.date}
+                    onChange={(e) => setNewShift({...newShift, date: e.target.value})}
+                    required 
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="font-bold">Start Time</Label>
+                    <Input 
+                      type="time" 
+                      className="h-12 rounded-xl border-2"
+                      value={newShift.startTime}
+                      onChange={(e) => setNewShift({...newShift, startTime: e.target.value})}
+                      required 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="font-bold">End Time</Label>
+                    <Input 
+                      type="time" 
+                      className="h-12 rounded-xl border-2"
+                      value={newShift.endTime}
+                      onChange={(e) => setNewShift({...newShift, endTime: e.target.value})}
+                      required 
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="font-bold">Position / Role for Shift</Label>
+                  <Input 
+                    placeholder="e.g. Head Chef, Patio Server" 
+                    className="h-12 rounded-xl border-2"
+                    value={newShift.position}
+                    onChange={(e) => setNewShift({...newShift, position: e.target.value})}
+                    required 
+                  />
+                </div>
+                <Button type="submit" className="w-full h-14 bg-primary text-lg font-black rounded-2xl shadow-xl shadow-primary/20 mt-4">
+                  Confirm Assignment
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
       
-      <div className="overflow-x-auto pb-4">
-        <div className="grid grid-cols-7 gap-2 min-w-[700px]">
-          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-            <div key={day} className="border rounded-lg p-2 min-h-[120px]">
-              <h4 className="font-medium text-center mb-2">{day}</h4>
-              <div className="space-y-1">
-                {shifts.filter(shift => {
-                  const shiftDate = new Date(shift.date);
-                  const dayOfWeek = shiftDate.getDay();
-                  const weekDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-                  return weekDay === ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(day);
-                }).map((shift) => {
-                  const staffMember = staff.find(s => s.id === shift.staffId);
-                  return (
-                    <div key={shift.id} className={`p-2 rounded text-xs ${getShiftStatusColor(shift.status)}`}>
-                      <div className="font-medium">{staffMember?.firstName}</div>
-                      <div>{shift.startTime} - {shift.endTime}</div>
-                      <div className="truncate" title={shift.position}>{shift.position}</div>
-                    </div>
-                  );
-                })}
+      <div className="overflow-x-auto rounded-[2.5rem] border-2 border-slate-100 bg-white">
+        <div className="grid grid-cols-7 min-w-[1000px] divide-x-2 divide-slate-50">
+          {weekDays.map((date, idx) => {
+            const dayName = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][idx];
+            const isToday = new Date().toDateString() === date.toDateString();
+            
+            return (
+              <div key={idx} className={`min-h-[400px] flex flex-col ${isToday ? 'bg-primary/[0.02]' : ''}`}>
+                <div className={`p-4 text-center border-b-2 ${isToday ? 'border-primary bg-primary/5' : 'border-slate-50'}`}>
+                  <p className={`text-xs font-black uppercase tracking-widest ${isToday ? 'text-primary' : 'text-slate-400'}`}>{dayName}</p>
+                  <p className={`text-xl font-black mt-1 ${isToday ? 'text-primary' : 'text-slate-900'}`}>{date.getDate()}</p>
+                </div>
+                <div className="p-3 space-y-3 flex-1">
+                  {shifts.filter(shift => {
+                    const shiftDate = new Date(shift.date);
+                    return shiftDate.toDateString() === date.toDateString();
+                  }).map((shift) => {
+                    const staffMember = staff.find(s => s.id === shift.staffId);
+                    return (
+                      <div key={shift.id} className="relative group p-3 rounded-2xl border-2 border-slate-100 bg-white shadow-sm hover:border-primary/30 hover:shadow-md transition-all">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center">
+                            <User className="h-3 w-3 text-slate-500" />
+                          </div>
+                          <p className="text-xs font-black text-slate-900 truncate">
+                            {staffMember?.firstName} {staffMember?.lastName?.charAt(0)}.
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-black text-slate-400 flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {shift.startTime} - {shift.endTime}
+                          </p>
+                          <p className="text-[10px] font-bold text-primary truncate bg-primary/5 px-2 py-0.5 rounded-full inline-block">
+                            {shift.position}
+                          </p>
+                        </div>
+                        <button 
+                          onClick={() => handleDeleteShift(shift.id)}
+                          className="absolute -top-2 -right-2 h-6 w-6 bg-white border-2 border-slate-100 rounded-full flex items-center justify-center text-slate-300 hover:text-destructive hover:border-destructive opacity-0 group-hover:opacity-100 transition-all shadow-sm"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

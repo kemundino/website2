@@ -147,18 +147,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
       }
       
+      // Check admin users and pass current user ID so we know who to keep if there are duplicates
+      checkAdminUsers(firebaseUser?.uid);
       setIsLoading(false);
     });
 
     // Check if any admin users exist
-    const checkAdminUsers = async () => {
+    async function checkAdminUsers(currentUserUid?: string) {
       try {
         // Get all users to check for admin users
         const result = await FirestoreService.getAll('users');
         if (result.success && result.data) {
-          const adminUsers = result.data.filter((user: any) => user.role === 'admin');
-          setHasAdmin(adminUsers.length > 0);
-          console.log('👑 Admin users found:', adminUsers.length);
+          const adminUsers = result.data.filter((u: any) => u.role === 'admin' || u.isAdmin === true);
+          
+          if (adminUsers.length > 1) {
+            console.log(`⚠️ Found ${adminUsers.length} admins. Automatically fixing to ensure only ONE admin exists...`);
+            // Determine which admin to keep. If a currentUserUid is passed, keep that one. 
+            // Otherwise, keep the first one we found.
+            const keepUid = currentUserUid && adminUsers.some(a => a.uid === currentUserUid) 
+              ? currentUserUid 
+              : adminUsers[0].uid;
+              
+            // Demote all others
+            for (const admin of adminUsers) {
+              if (admin.uid !== keepUid) {
+                console.log(`Demoting extra admin: ${admin.email} (${admin.uid})`);
+                await UserService.update(admin.uid, { role: 'customer', isAdmin: false });
+              }
+            }
+            
+            setHasAdmin(true);
+            console.log('✅ Admin cleanup complete. Only one admin remains.');
+          } else {
+            setHasAdmin(adminUsers.length > 0);
+            console.log('👑 Admin users found:', adminUsers.length);
+          }
         } else {
           setHasAdmin(false);
         }
@@ -168,7 +191,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
 
-    checkAdminUsers();
+    // We will call checkAdminUsers inside onAuthStateChanged instead so we can pass the current user ID
 
     return () => {
       console.log('🔐 Cleaning up auth listener');

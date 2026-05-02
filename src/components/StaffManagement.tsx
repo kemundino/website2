@@ -13,7 +13,8 @@ import {
   TrendingUp, AlertCircle, CheckCircle, XCircle, ChevronDown
 } from 'lucide-react';
 import { toast } from 'sonner';
-
+import { db } from '@/firebase/config';
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, getDocs, writeBatch } from 'firebase/firestore';
 interface StaffMember {
   id: string;
   firstName: string;
@@ -88,128 +89,105 @@ const StaffManagement = () => {
   };
   const [selectedWeek, setSelectedWeek] = useState(new Date());
 
-  // Initialize with sample data
+  // Helper to safely parse dates from Firestore
+  const parseDate = (dateVal: any) => {
+    if (!dateVal) return new Date();
+    if (dateVal.toDate) return dateVal.toDate();
+    if (typeof dateVal === 'string' || typeof dateVal === 'number') return new Date(dateVal);
+    return new Date();
+  };
+
+  // Listen to Firestore for live data
   useEffect(() => {
-    const sampleStaff: StaffMember[] = [
-      {
-        id: '1',
-        firstName: 'John',
-        lastName: 'Smith',
-        email: 'john.smith@restaurant.com',
-        phone: '+1234567890',
-        role: 'chef',
-        status: 'active',
-        hireDate: new Date('2022-01-15'),
-        hourlyRate: 25,
-        address: '123 Main St, City, State',
-        emergencyContact: {
-          name: 'Jane Smith',
-          phone: '+0987654321',
-          relationship: 'Spouse'
-        },
-        skills: ['Grilling', 'Sauce Making', 'Menu Development'],
-        certifications: ['Food Safety Certificate', 'Culinary Degree'],
-        schedule: [
-          { id: '1', dayOfWeek: 'Monday', startTime: '09:00', endTime: '17:00', position: 'Head Chef' },
-          { id: '2', dayOfWeek: 'Tuesday', startTime: '09:00', endTime: '17:00', position: 'Head Chef' }
-        ],
-        performance: {
-          attendanceRate: 95,
-          punctualityRate: 98,
-          customerRating: 4.8,
-          ordersPerHour: 15,
-          errorRate: 2,
-          lastReview: new Date('2024-02-15')
-        }
-      },
-      {
-        id: '2',
-        firstName: 'Sarah',
-        lastName: 'Johnson',
-        email: 'sarah.johnson@restaurant.com',
-        phone: '+1234567891',
-        role: 'server',
-        status: 'active',
-        hireDate: new Date('2023-03-20'),
-        hourlyRate: 18,
-        address: '456 Oak Ave, City, State',
-        emergencyContact: {
-          name: 'Mike Johnson',
-          phone: '+0987654322',
-          relationship: 'Brother'
-        },
-        skills: ['Customer Service', 'Upselling', 'Wine Knowledge'],
-        certifications: ['Responsible Serving Certificate'],
-        schedule: [
-          { id: '3', dayOfWeek: 'Wednesday', startTime: '16:00', endTime: '23:00', position: 'Server' },
-          { id: '4', dayOfWeek: 'Thursday', startTime: '16:00', endTime: '23:00', position: 'Server' }
-        ],
-        performance: {
-          attendanceRate: 92,
-          punctualityRate: 95,
-          customerRating: 4.6,
-          ordersPerHour: 12,
-          errorRate: 3,
-          lastReview: new Date('2024-01-20')
-        }
-      },
-      {
-        id: '3',
-        firstName: 'Mike',
-        lastName: 'Wilson',
-        email: 'mike.wilson@restaurant.com',
-        phone: '+1234567892',
-        role: 'manager',
-        status: 'active',
-        hireDate: new Date('2021-06-10'),
-        hourlyRate: 35,
-        address: '789 Pine Rd, City, State',
-        emergencyContact: {
-          name: 'Lisa Wilson',
-          phone: '+0987654323',
-          relationship: 'Wife'
-        },
-        skills: ['Leadership', 'Inventory Management', 'Customer Relations'],
-        certifications: ['Restaurant Management Certificate', 'Food Safety Certificate'],
-        schedule: [
-          { id: '5', dayOfWeek: 'Monday', startTime: '08:00', endTime: '18:00', position: 'Manager' },
-          { id: '6', dayOfWeek: 'Friday', startTime: '08:00', endTime: '18:00', position: 'Manager' }
-        ],
-        performance: {
-          attendanceRate: 98,
-          punctualityRate: 99,
-          customerRating: 4.9,
-          ordersPerHour: 8,
-          errorRate: 1,
-          lastReview: new Date('2024-03-01')
-        }
-      }
-    ];
+    let unsubscribeStaff: () => void;
+    let unsubscribeShifts: () => void;
 
-    const sampleShifts: Shift[] = [
-      {
-        id: '1',
-        staffId: '1',
-        date: '2024-03-31',
-        startTime: '09:00',
-        endTime: '17:00',
-        position: 'Head Chef',
-        status: 'scheduled'
-      },
-      {
-        id: '2',
-        staffId: '2',
-        date: '2024-03-31',
-        startTime: '16:00',
-        endTime: '23:00',
-        position: 'Server',
-        status: 'in-progress',
-        actualStartTime: '15:55'
-      }
-    ];
+    const setupListeners = async () => {
+      // 1. Listen to Staff
+      unsubscribeStaff = onSnapshot(collection(db, 'staff'), async (snapshot) => {
+        if (snapshot.empty) {
+          // Seed initial data if empty
+          const sampleStaff: Omit<StaffMember, 'id'>[] = [
+            {
+              firstName: 'John',
+              lastName: 'Smith',
+              email: 'john.smith@restaurant.com',
+              phone: '+1234567890',
+              role: 'chef',
+              status: 'active',
+              hireDate: new Date('2022-01-15'),
+              hourlyRate: 25,
+              address: '123 Main St, City, State',
+              emergencyContact: { name: 'Jane Smith', phone: '+0987654321', relationship: 'Spouse' },
+              skills: ['Grilling', 'Sauce Making', 'Menu Development'],
+              certifications: ['Food Safety Certificate', 'Culinary Degree'],
+              schedule: [
+                { id: '1', dayOfWeek: 'Monday', startTime: '09:00', endTime: '17:00', position: 'Head Chef' },
+                { id: '2', dayOfWeek: 'Tuesday', startTime: '09:00', endTime: '17:00', position: 'Head Chef' }
+              ],
+              performance: { attendanceRate: 95, punctualityRate: 98, customerRating: 4.8, ordersPerHour: 15, errorRate: 2, lastReview: new Date('2024-02-15') }
+            },
+            {
+              firstName: 'Sarah',
+              lastName: 'Johnson',
+              email: 'sarah.johnson@restaurant.com',
+              phone: '+1234567891',
+              role: 'server',
+              status: 'active',
+              hireDate: new Date('2023-03-20'),
+              hourlyRate: 18,
+              address: '456 Oak Ave, City, State',
+              emergencyContact: { name: 'Mike Johnson', phone: '+0987654322', relationship: 'Brother' },
+              skills: ['Customer Service', 'Upselling', 'Wine Knowledge'],
+              certifications: ['Responsible Serving Certificate'],
+              schedule: [
+                { id: '3', dayOfWeek: 'Wednesday', startTime: '16:00', endTime: '23:00', position: 'Server' }
+              ],
+              performance: { attendanceRate: 92, punctualityRate: 95, customerRating: 4.6, ordersPerHour: 12, errorRate: 3, lastReview: new Date('2024-01-20') }
+            }
+          ];
+          
+          try {
+            const batch = writeBatch(db);
+            sampleStaff.forEach(staff => {
+              const docRef = doc(collection(db, 'staff'));
+              batch.set(docRef, { ...staff, createdAt: serverTimestamp() });
+            });
+            await batch.commit();
+          } catch (e) {
+            console.error("Error seeding staff:", e);
+          }
+        } else {
+          // Parse documents
+          const staffData = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+              ...data,
+              id: doc.id,
+              hireDate: parseDate(data.hireDate),
+              performance: {
+                ...data.performance,
+                lastReview: parseDate(data.performance?.lastReview)
+              }
+            } as StaffMember;
+          });
+          setStaff(staffData);
+        }
+      });
 
-    setStaff(sampleStaff);
-    setShifts(sampleShifts);
+      // 2. Listen to Shifts
+      unsubscribeShifts = onSnapshot(collection(db, 'shifts'), (snapshot) => {
+        const shiftsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Shift));
+        setShifts(shiftsData);
+      });
+    };
+
+    setupListeners();
+
+    return () => {
+      if (unsubscribeStaff) unsubscribeStaff();
+      if (unsubscribeShifts) unsubscribeShifts();
+    };
   }, []);
 
   const getRoleColor = (role: StaffRole) => {
@@ -245,25 +223,38 @@ const StaffManagement = () => {
     }
   };
 
-  const addStaffMember = (staffData: Omit<StaffMember, 'id'>) => {
-    const newStaff: StaffMember = {
-      ...staffData,
-      id: Date.now().toString(),
-    };
-    setStaff(prev => [...prev, newStaff]);
-    toast.success('Staff member added successfully');
+  const addStaffMember = async (staffData: Omit<StaffMember, 'id'>) => {
+    try {
+      await addDoc(collection(db, 'staff'), {
+        ...staffData,
+        createdAt: serverTimestamp()
+      });
+      toast.success('Staff member added successfully');
+      setIsAddStaffOpen(false);
+    } catch (error) {
+      toast.error('Failed to add staff member');
+      console.error(error);
+    }
   };
 
-  const updateStaffStatus = (staffId: string, status: StaffMember['status']) => {
-    setStaff(prev => prev.map(member => 
-      member.id === staffId ? { ...member, status } : member
-    ));
-    toast.success('Staff status updated');
+  const updateStaffStatus = async (staffId: string, status: StaffMember['status']) => {
+    try {
+      await updateDoc(doc(db, 'staff', staffId), { status });
+      toast.success('Staff status updated');
+    } catch (error) {
+      toast.error('Failed to update status');
+      console.error(error);
+    }
   };
 
-  const deleteStaffMember = (staffId: string) => {
-    setStaff(prev => prev.filter(member => member.id !== staffId));
-    toast.success('Staff member removed');
+  const deleteStaffMember = async (staffId: string) => {
+    try {
+      await deleteDoc(doc(db, 'staff', staffId));
+      toast.success('Staff member removed');
+    } catch (error) {
+      toast.error('Failed to remove staff member');
+      console.error(error);
+    }
   };
 
   const getFilteredStaff = () => {
@@ -715,7 +706,7 @@ const AddStaffForm = ({
 const StaffDetails = ({ staff }: { staff: StaffMember }) => {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label className="text-sm font-medium">Email</Label>
           <p>{staff.email}</p>
@@ -755,7 +746,7 @@ const StaffDetails = ({ staff }: { staff: StaffMember }) => {
       
       <div>
         <Label className="text-sm font-medium mb-3">Performance Metrics</Label>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <div className="flex justify-between">
               <span>Attendance Rate</span>
@@ -804,29 +795,31 @@ const ScheduleManager = ({ staff, shifts }: { staff: StaffMember[], shifts: Shif
         </div>
       </div>
       
-      <div className="grid grid-cols-7 gap-2">
-        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-          <div key={day} className="border rounded-lg p-2">
-            <h4 className="font-medium text-center mb-2">{day}</h4>
-            <div className="space-y-1">
-              {shifts.filter(shift => {
-                const shiftDate = new Date(shift.date);
-                const dayOfWeek = shiftDate.getDay();
-                const weekDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-                return weekDay === ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(day);
-              }).map((shift) => {
-                const staffMember = staff.find(s => s.id === shift.staffId);
-                return (
-                  <div key={shift.id} className={`p-2 rounded text-xs ${getShiftStatusColor(shift.status)}`}>
-                    <div className="font-medium">{staffMember?.firstName}</div>
-                    <div>{shift.startTime} - {shift.endTime}</div>
-                    <div>{shift.position}</div>
-                  </div>
-                );
-              })}
+      <div className="overflow-x-auto pb-4">
+        <div className="grid grid-cols-7 gap-2 min-w-[700px]">
+          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+            <div key={day} className="border rounded-lg p-2 min-h-[120px]">
+              <h4 className="font-medium text-center mb-2">{day}</h4>
+              <div className="space-y-1">
+                {shifts.filter(shift => {
+                  const shiftDate = new Date(shift.date);
+                  const dayOfWeek = shiftDate.getDay();
+                  const weekDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                  return weekDay === ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(day);
+                }).map((shift) => {
+                  const staffMember = staff.find(s => s.id === shift.staffId);
+                  return (
+                    <div key={shift.id} className={`p-2 rounded text-xs ${getShiftStatusColor(shift.status)}`}>
+                      <div className="font-medium">{staffMember?.firstName}</div>
+                      <div>{shift.startTime} - {shift.endTime}</div>
+                      <div className="truncate" title={shift.position}>{shift.position}</div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -764,7 +764,7 @@ const ReservationForm = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="customerName">Customer Name *</Label>
           <Input
@@ -786,7 +786,7 @@ const ReservationForm = ({
         </div>
       </div>
       
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="customerPhone">Phone *</Label>
           <Input
@@ -811,7 +811,7 @@ const ReservationForm = ({
         </div>
       </div>
       
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="reservationDate">Date *</Label>
           <Input

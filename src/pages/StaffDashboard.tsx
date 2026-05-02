@@ -47,15 +47,15 @@ const StaffDashboard = () => {
       const staffQuery = query(collection(db, 'staff'), where('email', '==', user.email));
       unsubscribeStaff = onSnapshot(staffQuery, (snapshot) => {
         if (!snapshot.empty) {
-          const doc = snapshot.docs[0];
-          const data = doc.data() as StaffMember;
-          setStaffInfo({ ...data, id: doc.id });
+          const docSnap = snapshot.docs[0];
+          const data = docSnap.data() as StaffMember;
+          setStaffInfo({ ...data, id: docSnap.id });
           
           // 2. Once we have staffId, listen to their shifts
           const shiftsQuery = query(
             collection(db, 'shifts'), 
-            where('staffId', '==', doc.id),
-            orderBy('date', 'desc')
+            where('staffId', '==', docSnap.id)
+            // Removed orderBy to avoid index requirement for now
           );
           
           unsubscribeShifts = onSnapshot(shiftsQuery, (shiftSnapshot) => {
@@ -63,12 +63,25 @@ const StaffDashboard = () => {
               id: shiftDoc.id,
               ...shiftDoc.data()
             } as Shift));
+            // Sort manually to avoid index requirement
+            shiftsData.sort((a, b) => {
+              const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
+              const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
+              return dateB.getTime() - dateA.getTime();
+            });
             setShifts(shiftsData);
+            setIsLoading(false);
+          }, (error) => {
+            console.error("Shifts listener error:", error);
             setIsLoading(false);
           });
         } else {
+          console.warn("No staff record found for email:", user.email);
           setIsLoading(false);
         }
+      }, (error) => {
+        console.error("Staff listener error:", error);
+        setIsLoading(false);
       });
     };
 

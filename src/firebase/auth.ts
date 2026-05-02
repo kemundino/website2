@@ -13,7 +13,8 @@ import {
   setPersistence,
   browserLocalPersistence,
   browserSessionPersistence,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  fetchSignInMethodsForEmail
 } from 'firebase/auth';
 import { UserService } from './firestore';
 
@@ -301,6 +302,21 @@ class AuthService {
   // Reset password (sends email)
   async resetPassword(email: string): Promise<{ success: boolean; error?: string }> {
     try {
+      // First, let's try to check if the email uses a different provider (like Google)
+      try {
+        const methods = await fetchSignInMethodsForEmail(auth, email);
+        if (methods.length > 0 && !methods.includes('password')) {
+          return { 
+            success: false, 
+            error: `This email is registered using ${methods[0].replace('.com', '')}. Please use the "Continue with..." button to sign in.` 
+          };
+        }
+      } catch (checkError: any) {
+        // If Email Enumeration Protection is on, fetchSignInMethodsForEmail might throw an error.
+        // We'll ignore it and just proceed to sendPasswordResetEmail.
+        console.warn('Could not check sign-in methods (protection may be enabled):', checkError.message);
+      }
+
       await sendPasswordResetEmail(auth, email);
       return { success: true };
     } catch (error: any) {

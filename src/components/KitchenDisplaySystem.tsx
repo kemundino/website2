@@ -74,38 +74,6 @@ const KitchenDisplaySystem = () => {
     const setupListeners = async () => {
       // 1. Listen to Orders
       unsubscribeOrders = onSnapshot(collection(db, 'kitchen_orders'), async (snapshot) => {
-        if (snapshot.empty) {
-          // Seed initial data if empty
-          const sampleOrders: Omit<KitchenOrder, 'id'>[] = [
-            {
-              orderNumber: 'ORD-001',
-              customerName: 'John Smith',
-              tableNumber: 'T5',
-              orderType: 'dine-in',
-              items: [
-                { id: '1', name: 'Classic Burger', quantity: 2, status: 'preparing', prepTime: 15, startTime: new Date(Date.now() - 5 * 60000) },
-                { id: '2', name: 'French Fries', quantity: 2, status: 'preparing', prepTime: 8, startTime: new Date(Date.now() - 5 * 60000) },
-                { id: '3', name: 'Caesar Salad', quantity: 1, status: 'pending', prepTime: 10 }
-              ],
-              orderTime: new Date(Date.now() - 10 * 60000),
-              status: 'preparing',
-              priority: 'normal',
-              estimatedTime: 20,
-              specialInstructions: 'Extra pickles on the side'
-            }
-          ];
-          
-          try {
-            const batch = writeBatch(db);
-            sampleOrders.forEach(order => {
-              const docRef = doc(collection(db, 'kitchen_orders'));
-              batch.set(docRef, { ...order, createdAt: serverTimestamp() });
-            });
-            await batch.commit();
-          } catch (e) {
-            console.error("Error seeding kitchen orders:", e);
-          }
-        } else {
           const ordersData = snapshot.docs.map(doc => {
             const data = doc.data();
             return {
@@ -119,32 +87,12 @@ const KitchenDisplaySystem = () => {
             } as KitchenOrder;
           });
           setOrders(ordersData);
-        }
       });
 
       // 2. Listen to Stations
       onSnapshot(collection(db, 'kitchen_stations'), async (snapshot) => {
-        if (snapshot.empty) {
-          const sampleStations: Omit<KitchenStation, 'id'>[] = [
-            { name: 'Grill Station', assignedOrders: ['1'], capacity: 3, currentLoad: 1, status: 'active' },
-            { name: 'Fry Station', assignedOrders: ['1'], capacity: 2, currentLoad: 1, status: 'active' },
-            { name: 'Pizza Station', assignedOrders: ['2'], capacity: 2, currentLoad: 1, status: 'busy' },
-            { name: 'Salad Station', assignedOrders: [], capacity: 1, currentLoad: 0, status: 'active' }
-          ];
-          try {
-            const batch = writeBatch(db);
-            sampleStations.forEach(station => {
-              const docRef = doc(collection(db, 'kitchen_stations'));
-              batch.set(docRef, { ...station, createdAt: serverTimestamp() });
-            });
-            await batch.commit();
-          } catch (e) {
-            console.error("Error seeding kitchen stations:", e);
-          }
-        } else {
-          const stationsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as KitchenStation));
-          setStations(stationsData);
-        }
+        const stationsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as KitchenStation));
+        setStations(stationsData);
       });
     };
 

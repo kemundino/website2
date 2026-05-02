@@ -105,74 +105,20 @@ const StaffManagement = () => {
     const setupListeners = async () => {
       // 1. Listen to Staff
       unsubscribeStaff = onSnapshot(collection(db, 'staff'), async (snapshot) => {
-        if (snapshot.empty) {
-          // Seed initial data if empty
-          const sampleStaff: Omit<StaffMember, 'id'>[] = [
-            {
-              firstName: 'John',
-              lastName: 'Smith',
-              email: 'john.smith@restaurant.com',
-              phone: '+1234567890',
-              role: 'chef',
-              status: 'active',
-              hireDate: new Date('2022-01-15'),
-              hourlyRate: 25,
-              address: '123 Main St, City, State',
-              emergencyContact: { name: 'Jane Smith', phone: '+0987654321', relationship: 'Spouse' },
-              skills: ['Grilling', 'Sauce Making', 'Menu Development'],
-              certifications: ['Food Safety Certificate', 'Culinary Degree'],
-              schedule: [
-                { id: '1', dayOfWeek: 'Monday', startTime: '09:00', endTime: '17:00', position: 'Head Chef' },
-                { id: '2', dayOfWeek: 'Tuesday', startTime: '09:00', endTime: '17:00', position: 'Head Chef' }
-              ],
-              performance: { attendanceRate: 95, punctualityRate: 98, customerRating: 4.8, ordersPerHour: 15, errorRate: 2, lastReview: new Date('2024-02-15') }
-            },
-            {
-              firstName: 'Sarah',
-              lastName: 'Johnson',
-              email: 'sarah.johnson@restaurant.com',
-              phone: '+1234567891',
-              role: 'server',
-              status: 'active',
-              hireDate: new Date('2023-03-20'),
-              hourlyRate: 18,
-              address: '456 Oak Ave, City, State',
-              emergencyContact: { name: 'Mike Johnson', phone: '+0987654322', relationship: 'Brother' },
-              skills: ['Customer Service', 'Upselling', 'Wine Knowledge'],
-              certifications: ['Responsible Serving Certificate'],
-              schedule: [
-                { id: '3', dayOfWeek: 'Wednesday', startTime: '16:00', endTime: '23:00', position: 'Server' }
-              ],
-              performance: { attendanceRate: 92, punctualityRate: 95, customerRating: 4.6, ordersPerHour: 12, errorRate: 3, lastReview: new Date('2024-01-20') }
+        // Parse documents
+        const staffData = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            ...data,
+            id: doc.id,
+            hireDate: parseDate(data.hireDate),
+            performance: {
+              ...data.performance,
+              lastReview: parseDate(data.performance?.lastReview)
             }
-          ];
-          
-          try {
-            const batch = writeBatch(db);
-            sampleStaff.forEach(staff => {
-              const docRef = doc(collection(db, 'staff'));
-              batch.set(docRef, { ...staff, createdAt: serverTimestamp() });
-            });
-            await batch.commit();
-          } catch (e) {
-            console.error("Error seeding staff:", e);
-          }
-        } else {
-          // Parse documents
-          const staffData = snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-              ...data,
-              id: doc.id,
-              hireDate: parseDate(data.hireDate),
-              performance: {
-                ...data.performance,
-                lastReview: parseDate(data.performance?.lastReview)
-              }
-            } as StaffMember;
-          });
-          setStaff(staffData);
-        }
+          } as StaffMember;
+        });
+        setStaff(staffData);
       });
 
       // 2. Listen to Shifts

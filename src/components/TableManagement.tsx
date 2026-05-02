@@ -51,35 +51,9 @@ const TableManagement = () => {
     const setupListeners = async () => {
       // 1. Listen to Tables
       unsubscribeTables = onSnapshot(collection(db, 'tables'), async (snapshot) => {
-        if (snapshot.empty) {
-          // Seed initial data if empty
-          const defaultTables: Omit<Table, 'id'>[] = [
-            { number: 'T1', capacity: 4, status: 'available', position: { x: 0, y: 0 }, shape: 'square' },
-            { number: 'T2', capacity: 2, status: 'occupied', position: { x: 1, y: 0 }, shape: 'square' },
-            { number: 'T3', capacity: 6, status: 'reserved', position: { x: 2, y: 0 }, shape: 'rectangle' },
-            { number: 'T4', capacity: 4, status: 'available', position: { x: 0, y: 1 }, shape: 'square' },
-            { number: 'T5', capacity: 2, status: 'cleaning', position: { x: 1, y: 1 }, shape: 'square' },
-            { number: 'T6', capacity: 8, status: 'available', position: { x: 2, y: 1 }, shape: 'rectangle' },
-            { number: 'T7', capacity: 4, status: 'occupied', position: { x: 0, y: 2 }, shape: 'square' },
-            { number: 'T8', capacity: 4, status: 'available', position: { x: 1, y: 2 }, shape: 'square' },
-            { number: 'T9', capacity: 6, status: 'reserved', position: { x: 2, y: 2 }, shape: 'rectangle' },
-          ];
-          
-          try {
-            const batch = writeBatch(db);
-            defaultTables.forEach(table => {
-              const docRef = doc(collection(db, 'tables'));
-              batch.set(docRef, { ...table, createdAt: serverTimestamp() });
-            });
-            await batch.commit();
-          } catch (e) {
-            console.error("Error seeding tables:", e);
-          }
-        } else {
-          // Parse documents
-          const tablesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Table));
-          setTables(tablesData);
-        }
+        // Parse documents
+        const tablesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Table));
+        setTables(tablesData);
       });
 
       // 2. Listen to Reservations

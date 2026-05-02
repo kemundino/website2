@@ -255,7 +255,7 @@ const TableManagement = () => {
               Add Table
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="w-[95vw] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add New Table</DialogTitle>
             </DialogHeader>
@@ -273,7 +273,7 @@ const TableManagement = () => {
               New Reservation
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="w-[95vw] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create Reservation</DialogTitle>
             </DialogHeader>

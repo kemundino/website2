@@ -436,7 +436,7 @@ const ReservationSystem = () => {
                 New Reservation
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Create New Reservation</DialogTitle>
               </DialogHeader>
@@ -648,7 +648,7 @@ const ReservationSystem = () => {
                         <span className="hidden sm:inline">View</span>
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-3xl">
+                    <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle>Reservation Details</DialogTitle>
                       </DialogHeader>
@@ -948,7 +948,7 @@ const ReservationForm = ({
 const ReservationDetails = ({ reservation }: { reservation: Reservation }) => {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label className="text-sm font-medium">Customer Name</Label>
           <p>{reservation.customerName}</p>

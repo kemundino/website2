@@ -10,7 +10,8 @@ import {
   Utensils, Package, AlertTriangle, ChevronDown
 } from 'lucide-react';
 import { toast } from 'sonner';
-
+import { db } from '@/firebase/config';
+import { collection, onSnapshot, updateDoc, doc, serverTimestamp, writeBatch } from 'firebase/firestore';
 interface KitchenOrderItem {
   id: string;
   name: string;
@@ -66,67 +67,92 @@ const KitchenDisplaySystem = () => {
     return filterOptions.find(f => f.value === activeFilter)?.label || 'All Orders';
   };
 
-  // Initialize with sample data
+  // Listen to Firestore for live data
   useEffect(() => {
-    const sampleOrders: KitchenOrder[] = [
-      {
-        id: '1',
-        orderNumber: 'ORD-001',
-        customerName: 'John Smith',
-        tableNumber: 'T5',
-        orderType: 'dine-in',
-        items: [
-          { id: '1', name: 'Classic Burger', quantity: 2, status: 'preparing', prepTime: 15, startTime: new Date(Date.now() - 5 * 60000) },
-          { id: '2', name: 'French Fries', quantity: 2, status: 'preparing', prepTime: 8, startTime: new Date(Date.now() - 5 * 60000) },
-          { id: '3', name: 'Caesar Salad', quantity: 1, status: 'pending', prepTime: 10 }
-        ],
-        orderTime: new Date(Date.now() - 10 * 60000),
-        status: 'preparing',
-        priority: 'normal',
-        estimatedTime: 20,
-        specialInstructions: 'Extra pickles on the side'
-      },
-      {
-        id: '2',
-        orderNumber: 'ORD-002',
-        customerName: 'Sarah Johnson',
-        orderType: 'takeout',
-        items: [
-          { id: '4', name: 'Margherita Pizza', quantity: 1, status: 'pending', prepTime: 20 },
-          { id: '5', name: 'Garlic Bread', quantity: 1, status: 'pending', prepTime: 5 }
-        ],
-        orderTime: new Date(Date.now() - 5 * 60000),
-        status: 'pending',
-        priority: 'high',
-        estimatedTime: 25
-      },
-      {
-        id: '3',
-        orderNumber: 'ORD-003',
-        customerName: 'Mike Wilson',
-        tableNumber: 'T3',
-        orderType: 'dine-in',
-        items: [
-          { id: '6', name: 'Grilled Salmon', quantity: 1, status: 'ready', prepTime: 18, startTime: new Date(Date.now() - 18 * 60000) },
-          { id: '7', name: 'Steak Medium', quantity: 1, status: 'ready', prepTime: 25, startTime: new Date(Date.now() - 25 * 60000) }
-        ],
-        orderTime: new Date(Date.now() - 30 * 60000),
-        status: 'ready',
-        priority: 'normal',
-        estimatedTime: 25,
-        actualTime: 18
-      }
-    ];
+    let unsubscribeOrders: () => void;
 
-    const sampleStations: KitchenStation[] = [
-      { id: '1', name: 'Grill Station', assignedOrders: ['1'], capacity: 3, currentLoad: 1, status: 'active' },
-      { id: '2', name: 'Fry Station', assignedOrders: ['1'], capacity: 2, currentLoad: 1, status: 'active' },
-      { id: '3', name: 'Pizza Station', assignedOrders: ['2'], capacity: 2, currentLoad: 1, status: 'busy' },
-      { id: '4', name: 'Salad Station', assignedOrders: [], capacity: 1, currentLoad: 0, status: 'active' }
-    ];
+    const setupListeners = async () => {
+      // 1. Listen to Orders
+      unsubscribeOrders = onSnapshot(collection(db, 'kitchen_orders'), async (snapshot) => {
+        if (snapshot.empty) {
+          // Seed initial data if empty
+          const sampleOrders: Omit<KitchenOrder, 'id'>[] = [
+            {
+              orderNumber: 'ORD-001',
+              customerName: 'John Smith',
+              tableNumber: 'T5',
+              orderType: 'dine-in',
+              items: [
+                { id: '1', name: 'Classic Burger', quantity: 2, status: 'preparing', prepTime: 15, startTime: new Date(Date.now() - 5 * 60000) },
+                { id: '2', name: 'French Fries', quantity: 2, status: 'preparing', prepTime: 8, startTime: new Date(Date.now() - 5 * 60000) },
+                { id: '3', name: 'Caesar Salad', quantity: 1, status: 'pending', prepTime: 10 }
+              ],
+              orderTime: new Date(Date.now() - 10 * 60000),
+              status: 'preparing',
+              priority: 'normal',
+              estimatedTime: 20,
+              specialInstructions: 'Extra pickles on the side'
+            }
+          ];
+          
+          try {
+            const batch = writeBatch(db);
+            sampleOrders.forEach(order => {
+              const docRef = doc(collection(db, 'kitchen_orders'));
+              batch.set(docRef, { ...order, createdAt: serverTimestamp() });
+            });
+            await batch.commit();
+          } catch (e) {
+            console.error("Error seeding kitchen orders:", e);
+          }
+        } else {
+          const ordersData = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+              ...data,
+              id: doc.id,
+              orderTime: data.orderTime?.toDate ? data.orderTime.toDate() : new Date(data.orderTime),
+              items: data.items.map((item: any) => ({
+                ...item,
+                startTime: item.startTime?.toDate ? item.startTime.toDate() : (item.startTime ? new Date(item.startTime) : undefined)
+              }))
+            } as KitchenOrder;
+          });
+          setOrders(ordersData);
+        }
+      });
 
-    setOrders(sampleOrders);
-    setStations(sampleStations);
+      // 2. Listen to Stations
+      onSnapshot(collection(db, 'kitchen_stations'), async (snapshot) => {
+        if (snapshot.empty) {
+          const sampleStations: Omit<KitchenStation, 'id'>[] = [
+            { name: 'Grill Station', assignedOrders: ['1'], capacity: 3, currentLoad: 1, status: 'active' },
+            { name: 'Fry Station', assignedOrders: ['1'], capacity: 2, currentLoad: 1, status: 'active' },
+            { name: 'Pizza Station', assignedOrders: ['2'], capacity: 2, currentLoad: 1, status: 'busy' },
+            { name: 'Salad Station', assignedOrders: [], capacity: 1, currentLoad: 0, status: 'active' }
+          ];
+          try {
+            const batch = writeBatch(db);
+            sampleStations.forEach(station => {
+              const docRef = doc(collection(db, 'kitchen_stations'));
+              batch.set(docRef, { ...station, createdAt: serverTimestamp() });
+            });
+            await batch.commit();
+          } catch (e) {
+            console.error("Error seeding kitchen stations:", e);
+          }
+        } else {
+          const stationsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as KitchenStation));
+          setStations(stationsData);
+        }
+      });
+    };
+
+    setupListeners();
+
+    return () => {
+      if (unsubscribeOrders) unsubscribeOrders();
+    };
   }, []);
 
   // Update current time every second
@@ -179,36 +205,48 @@ const KitchenDisplaySystem = () => {
     return Math.min((elapsed / item.prepTime) * 100, 100);
   };
 
-  const updateItemStatus = (orderId: string, itemId: string, status: KitchenOrderItem['status']) => {
-    setOrders(prev => prev.map(order => {
-      if (order.id === orderId) {
-        const updatedItems = order.items.map(item => 
-          item.id === itemId ? { ...item, status, startTime: status === 'preparing' ? new Date() : item.startTime } : item
-        );
-        
-        // Update order status based on item statuses
-        const allItemsReady = updatedItems.every(item => item.status === 'ready' || item.status === 'completed');
-        const anyItemPreparing = updatedItems.some(item => item.status === 'preparing');
-        const allItemsCompleted = updatedItems.every(item => item.status === 'completed');
-        
-        let newOrderStatus: KitchenOrder['status'] = order.status;
-        if (allItemsCompleted) newOrderStatus = 'completed';
-        else if (allItemsReady) newOrderStatus = 'ready';
-        else if (anyItemPreparing) newOrderStatus = 'preparing';
-        
-        return { ...order, items: updatedItems, status: newOrderStatus };
-      }
-      return order;
-    }));
-    
-    toast.success('Item status updated');
+  const updateItemStatus = async (orderId: string, itemId: string, status: KitchenOrderItem['status']) => {
+    try {
+      const order = orders.find(o => o.id === orderId);
+      if (!order) return;
+
+      const updatedItems = order.items.map(item => 
+        item.id === itemId ? { ...item, status, startTime: status === 'preparing' ? new Date() : item.startTime } : item
+      );
+      
+      const allItemsReady = updatedItems.every(item => item.status === 'ready' || item.status === 'completed');
+      const anyItemPreparing = updatedItems.some(item => item.status === 'preparing');
+      const allItemsCompleted = updatedItems.every(item => item.status === 'completed');
+      
+      let newOrderStatus: KitchenOrder['status'] = order.status;
+      if (allItemsCompleted) newOrderStatus = 'completed';
+      else if (allItemsReady) newOrderStatus = 'ready';
+      else if (anyItemPreparing) newOrderStatus = 'preparing';
+
+      await updateDoc(doc(db, 'kitchen_orders', orderId), { 
+        items: updatedItems, 
+        status: newOrderStatus,
+        updatedAt: serverTimestamp()
+      });
+      
+      toast.success('Item status updated');
+    } catch (error) {
+      toast.error('Failed to update item status');
+      console.error(error);
+    }
   };
 
-  const updateOrderStatus = (orderId: string, status: KitchenOrder['status']) => {
-    setOrders(prev => prev.map(order => 
-      order.id === orderId ? { ...order, status } : order
-    ));
-    toast.success(`Order ${orderId} marked as ${status}`);
+  const updateOrderStatus = async (orderId: string, status: KitchenOrder['status']) => {
+    try {
+      await updateDoc(doc(db, 'kitchen_orders', orderId), { 
+        status,
+        updatedAt: serverTimestamp()
+      });
+      toast.success(`Order marked as ${status}`);
+    } catch (error) {
+      toast.error('Failed to update order status');
+      console.error(error);
+    }
   };
 
   const getFilteredOrders = () => {

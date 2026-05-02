@@ -11,7 +11,8 @@ import {
   Plus, Edit, Trash2, Eye, Calendar, MapPin
 } from 'lucide-react';
 import { toast } from 'sonner';
-
+import { db } from '@/firebase/config';
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, writeBatch } from 'firebase/firestore';
 interface Table {
   id: string;
   number: string;
@@ -42,43 +43,58 @@ const TableManagement = () => {
   const [isAddTableOpen, setIsAddTableOpen] = useState(false);
   const [isReservationOpen, setIsReservationOpen] = useState(false);
 
-  // Initialize with default tables
+  // Listen to Firestore for live data
   useEffect(() => {
-    const defaultTables: Table[] = [
-      { id: '1', number: 'T1', capacity: 4, status: 'available', position: { x: 0, y: 0 }, shape: 'square' },
-      { id: '2', number: 'T2', capacity: 2, status: 'occupied', position: { x: 1, y: 0 }, shape: 'square' },
-      { id: '3', number: 'T3', capacity: 6, status: 'reserved', position: { x: 2, y: 0 }, shape: 'rectangle' },
-      { id: '4', number: 'T4', capacity: 4, status: 'available', position: { x: 0, y: 1 }, shape: 'square' },
-      { id: '5', number: 'T5', capacity: 2, status: 'cleaning', position: { x: 1, y: 1 }, shape: 'square' },
-      { id: '6', number: 'T6', capacity: 8, status: 'available', position: { x: 2, y: 1 }, shape: 'rectangle' },
-      { id: '7', number: 'T7', capacity: 4, status: 'occupied', position: { x: 0, y: 2 }, shape: 'square' },
-      { id: '8', number: 'T8', capacity: 4, status: 'available', position: { x: 1, y: 2 }, shape: 'square' },
-      { id: '9', number: 'T9', capacity: 6, status: 'reserved', position: { x: 2, y: 2 }, shape: 'rectangle' },
-    ];
-    
-    const defaultReservations: Reservation[] = [
-      {
-        id: '1',
-        tableId: '3',
-        customerName: 'John Smith',
-        customerPhone: '+1234567890',
-        partySize: 6,
-        reservationTime: '2024-03-31T19:00:00',
-        status: 'confirmed'
-      },
-      {
-        id: '2',
-        tableId: '9',
-        customerName: 'Sarah Johnson',
-        customerPhone: '+0987654321',
-        partySize: 4,
-        reservationTime: '2024-03-31T20:30:00',
-        status: 'pending'
-      }
-    ];
+    let unsubscribeTables: () => void;
+    let unsubscribeReservations: () => void;
 
-    setTables(defaultTables);
-    setReservations(defaultReservations);
+    const setupListeners = async () => {
+      // 1. Listen to Tables
+      unsubscribeTables = onSnapshot(collection(db, 'tables'), async (snapshot) => {
+        if (snapshot.empty) {
+          // Seed initial data if empty
+          const defaultTables: Omit<Table, 'id'>[] = [
+            { number: 'T1', capacity: 4, status: 'available', position: { x: 0, y: 0 }, shape: 'square' },
+            { number: 'T2', capacity: 2, status: 'occupied', position: { x: 1, y: 0 }, shape: 'square' },
+            { number: 'T3', capacity: 6, status: 'reserved', position: { x: 2, y: 0 }, shape: 'rectangle' },
+            { number: 'T4', capacity: 4, status: 'available', position: { x: 0, y: 1 }, shape: 'square' },
+            { number: 'T5', capacity: 2, status: 'cleaning', position: { x: 1, y: 1 }, shape: 'square' },
+            { number: 'T6', capacity: 8, status: 'available', position: { x: 2, y: 1 }, shape: 'rectangle' },
+            { number: 'T7', capacity: 4, status: 'occupied', position: { x: 0, y: 2 }, shape: 'square' },
+            { number: 'T8', capacity: 4, status: 'available', position: { x: 1, y: 2 }, shape: 'square' },
+            { number: 'T9', capacity: 6, status: 'reserved', position: { x: 2, y: 2 }, shape: 'rectangle' },
+          ];
+          
+          try {
+            const batch = writeBatch(db);
+            defaultTables.forEach(table => {
+              const docRef = doc(collection(db, 'tables'));
+              batch.set(docRef, { ...table, createdAt: serverTimestamp() });
+            });
+            await batch.commit();
+          } catch (e) {
+            console.error("Error seeding tables:", e);
+          }
+        } else {
+          // Parse documents
+          const tablesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Table));
+          setTables(tablesData);
+        }
+      });
+
+      // 2. Listen to Reservations
+      unsubscribeReservations = onSnapshot(collection(db, 'reservations'), (snapshot) => {
+        const reservationsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Reservation));
+        setReservations(reservationsData);
+      });
+    };
+
+    setupListeners();
+
+    return () => {
+      if (unsubscribeTables) unsubscribeTables();
+      if (unsubscribeReservations) unsubscribeReservations();
+    };
   }, []);
 
   const getStatusColor = (status: Table['status']) => {
@@ -103,37 +119,54 @@ const TableManagement = () => {
     }
   };
 
-  const updateTableStatus = (tableId: string, status: Table['status']) => {
-    setTables(prev => prev.map(table => 
-      table.id === tableId ? { ...table, status } : table
-    ));
-    toast.success(`Table status updated to ${status}`);
+  const updateTableStatus = async (tableId: string, status: Table['status']) => {
+    try {
+      await updateDoc(doc(db, 'tables', tableId), { status });
+      toast.success(`Table status updated to ${status}`);
+    } catch (error) {
+      toast.error('Failed to update table status');
+      console.error(error);
+    }
   };
 
-  const addTable = (tableData: Omit<Table, 'id'>) => {
-    const newTable: Table = {
-      ...tableData,
-      id: Date.now().toString(),
-    };
-    setTables(prev => [...prev, newTable]);
-    toast.success('Table added successfully');
+  const addTable = async (tableData: Omit<Table, 'id'>) => {
+    try {
+      await addDoc(collection(db, 'tables'), {
+        ...tableData,
+        createdAt: serverTimestamp()
+      });
+      toast.success('Table added successfully');
+      setIsAddTableOpen(false);
+    } catch (error) {
+      toast.error('Failed to add table');
+      console.error(error);
+    }
   };
 
-  const deleteTable = (tableId: string) => {
-    setTables(prev => prev.filter(table => table.id !== tableId));
-    toast.success('Table deleted successfully');
+  const deleteTable = async (tableId: string) => {
+    try {
+      await deleteDoc(doc(db, 'tables', tableId));
+      toast.success('Table deleted successfully');
+    } catch (error) {
+      toast.error('Failed to delete table');
+      console.error(error);
+    }
   };
 
-  const addReservation = (reservationData: Omit<Reservation, 'id'>) => {
-    const newReservation: Reservation = {
-      ...reservationData,
-      id: Date.now().toString(),
-    };
-    setReservations(prev => [...prev, newReservation]);
-    
-    // Update table status to reserved
-    updateTableStatus(reservationData.tableId, 'reserved');
-    toast.success('Reservation created successfully');
+  const addReservation = async (reservationData: Omit<Reservation, 'id'>) => {
+    try {
+      await addDoc(collection(db, 'reservations'), {
+        ...reservationData,
+        createdAt: serverTimestamp()
+      });
+      // Update table status to reserved
+      await updateTableStatus(reservationData.tableId, 'reserved');
+      toast.success('Reservation created successfully');
+      setIsReservationOpen(false);
+    } catch (error) {
+      toast.error('Failed to create reservation');
+      console.error(error);
+    }
   };
 
   const getTableStats = () => {
@@ -299,7 +332,7 @@ const TableManagement = () => {
             <CardTitle>Table {selectedTable.number} Details</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <Label className="text-sm font-medium">Capacity</Label>
                 <p className="text-lg">{selectedTable.capacity} seats</p>
@@ -358,22 +391,22 @@ const TableManagement = () => {
               {reservations.map((reservation) => {
                 const table = tables.find(t => t.id === reservation.tableId);
                 return (
-                  <div key={reservation.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-4">
+                  <div key={reservation.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-lg gap-3 sm:gap-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                       <div>
                         <p className="font-medium">{reservation.customerName}</p>
                         <p className="text-sm text-muted-foreground">
                           {new Date(reservation.reservationTime).toLocaleString()}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground sm:text-foreground">
                         <Users className="h-4 w-4" />
                         <span>{reservation.partySize}</span>
-                        <span>•</span>
+                        <span className="hidden sm:inline">•</span>
                         <span>Table {table?.number}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
                       <Badge variant={reservation.status === 'confirmed' ? 'default' : 'secondary'}>
                         {reservation.status}
                       </Badge>

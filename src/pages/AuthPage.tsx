@@ -28,8 +28,10 @@ const AuthPage = () => {
   const [rememberMe, setRememberMe] = useState(true);
   const [selectedRole, setSelectedRole] = useState<"customer" | "admin">("customer");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [isForgotPasswordFlow, setIsForgotPasswordFlow] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   
-  const { login, register, loginWithGoogle, loginWithGitHub, user, isLoading, error, isAuthenticated, hasAdmin, clearError } = useAuth();
+  const { login, register, loginWithGoogle, loginWithGitHub, resetPassword, user, isLoading, error, isAuthenticated, hasAdmin, clearError } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already authenticated
@@ -48,6 +50,7 @@ const AuthPage = () => {
     clearError();
     setFieldErrors({});
     setConfirmPassword("");
+    setIsForgotPasswordFlow(false);
   }, [isLogin, clearError]);
 
   const validateEmail = (email: string) => {
@@ -91,6 +94,21 @@ const AuthPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (isForgotPasswordFlow) {
+      if (!email.trim() || !validateEmail(email)) {
+        setFieldErrors({ email: "Please enter a valid email" });
+        return;
+      }
+      setIsResetting(true);
+      const success = await resetPassword(email);
+      setIsResetting(false);
+      if (success) {
+        toast.success("Password reset link sent to your email!");
+        setIsForgotPasswordFlow(false);
+      }
+      return;
+    }
+    
     if (!validateForm()) {
       toast.error("Please fix the errors in the form");
       return;
@@ -129,7 +147,9 @@ const AuthPage = () => {
   };
 
   const handleForgotPassword = () => {
-    toast.info("Password reset is demo mode only");
+    setIsForgotPasswordFlow(true);
+    clearError();
+    setFieldErrors({});
   };
 
   if (isAuthenticated) {
@@ -155,15 +175,15 @@ const AuthPage = () => {
               animate={{ opacity: 1 }}
               className="mb-2 font-display text-2xl font-bold text-foreground"
             >
-              {isLogin ? "Welcome back" : "Create account"}
+              {isForgotPasswordFlow ? "Reset Password" : (isLogin ? "Welcome back" : "Create account")}
             </motion.h1>
             <p className="text-sm text-muted-foreground">
-              {isLogin ? "Sign in to your BiteBuzz account" : "Join BiteBuzz and start ordering"}
+              {isForgotPasswordFlow ? "Enter your email to receive a reset link" : (isLogin ? "Sign in to your BiteBuzz account" : "Join BiteBuzz and start ordering")}
             </p>
           </div>
 
           {/* Admin Status */}
-          {!isLogin && (
+          {!isLogin && !isForgotPasswordFlow && (
             <div className="mb-4 rounded-lg bg-blue-50 border border-blue-200 p-3">
               <div className="flex items-center gap-2 text-blue-800">
                 {hasAdmin ? (
@@ -197,38 +217,42 @@ const AuthPage = () => {
           </AnimatePresence>
 
           {/* Social Login */}
-          <div className="mb-6 space-y-2">
-            <button
-              onClick={() => handleSocialLogin("Google")}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
-            >
-              <Chrome className="h-4 w-4" />
-              Continue with Google
-            </button>
-            <button
-              onClick={() => handleSocialLogin("GitHub")}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
-            >
-              <Github className="h-4 w-4" />
-              Continue with GitHub
-            </button>
-          </div>
+          {!isForgotPasswordFlow && (
+            <>
+              <div className="mb-6 space-y-2">
+                <button
+                  onClick={() => handleSocialLogin("Google")}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+                >
+                  <Chrome className="h-4 w-4" />
+                  Continue with Google
+                </button>
+                <button
+                  onClick={() => handleSocialLogin("GitHub")}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+                >
+                  <Github className="h-4 w-4" />
+                  Continue with GitHub
+                </button>
+              </div>
 
-          {/* Divider */}
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
-            </div>
-          </div>
+              {/* Divider */}
+              <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name Field (Register Only) */}
             <AnimatePresence>
-              {!isLogin && (
+              {!isLogin && !isForgotPasswordFlow && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
@@ -246,7 +270,7 @@ const AuthPage = () => {
                           ? 'border-red-500 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20' 
                           : 'border-input focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20'
                       }`}
-                      disabled={isLoading}
+                      disabled={isLoading || isResetting}
                     />
                     {fieldErrors.name && (
                       <p className="mt-1 text-xs text-red-500">{fieldErrors.name}</p>
@@ -269,7 +293,7 @@ const AuthPage = () => {
                     ? 'border-red-500 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20' 
                     : 'border-input focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20'
                 }`}
-                disabled={isLoading}
+                disabled={isLoading || isResetting}
               />
               {fieldErrors.email && (
                 <p className="mt-1 text-xs text-red-500">{fieldErrors.email}</p>
@@ -277,164 +301,175 @@ const AuthPage = () => {
             </div>
 
             {/* Password Field */}
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={`w-full rounded-lg border bg-background py-3 pl-10 pr-12 text-sm transition-colors ${
-                  fieldErrors.password 
-                    ? 'border-red-500 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20' 
-                    : 'border-input focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20'
-                }`}
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-              {fieldErrors.password && (
-                <p className="mt-1 text-xs text-red-500">{fieldErrors.password}</p>
-              )}
-            </div>
-
-            {/* Confirm password (register only) */}
             <AnimatePresence>
-              {!isLogin && (
+              {!isForgotPasswordFlow && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
+                  className="space-y-4"
                 >
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <input
                       type={showPassword ? "text" : "password"}
-                      placeholder="Confirm password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className={`w-full rounded-lg border bg-background py-3 pl-10 pr-4 text-sm transition-colors ${
-                        fieldErrors.confirmPassword
-                          ? "border-red-500 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
-                          : "border-input focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className={`w-full rounded-lg border bg-background py-3 pl-10 pr-12 text-sm transition-colors ${
+                        fieldErrors.password 
+                          ? 'border-red-500 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20' 
+                          : 'border-input focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20'
                       }`}
                       disabled={isLoading}
-                      autoComplete="new-password"
                     />
-                    {fieldErrors.confirmPassword && (
-                      <p className="mt-1 text-xs text-red-500">{fieldErrors.confirmPassword}</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                    {fieldErrors.password && (
+                      <p className="mt-1 text-xs text-red-500">{fieldErrors.password}</p>
+                    )}
+                  </div>
+
+                  {/* Confirm password (register only) */}
+                  <AnimatePresence>
+                    {!isLogin && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                      >
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Confirm password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className={`w-full rounded-lg border bg-background py-3 pl-10 pr-4 text-sm transition-colors ${
+                              fieldErrors.confirmPassword
+                                ? "border-red-500 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                                : "border-input focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            }`}
+                            disabled={isLoading}
+                            autoComplete="new-password"
+                          />
+                          {fieldErrors.confirmPassword && (
+                            <p className="mt-1 text-xs text-red-500">{fieldErrors.confirmPassword}</p>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Role Selection (Register Only) */}
+                  <AnimatePresence>
+                    {!isLogin && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="space-y-2"
+                      >
+                        <label className="text-sm font-medium text-foreground">Account Type</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedRole("customer")}
+                            className={`rounded-lg border p-3 text-sm font-medium transition-colors ${
+                              selectedRole === "customer"
+                                ? "border-primary bg-primary/10 text-primary"
+                                : "border-border bg-background text-muted-foreground hover:bg-muted"
+                            }`}
+                            disabled={isLoading}
+                          >
+                            <UserCheck className="h-4 w-4 mx-auto mb-1" />
+                            Customer
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedRole("admin")}
+                            disabled={hasAdmin || isLoading}
+                            className={`rounded-lg border p-3 text-sm font-medium transition-colors ${
+                              selectedRole === "admin"
+                                ? "border-primary bg-primary/10 text-primary"
+                                : hasAdmin
+                                ? "border-border bg-muted text-muted-foreground cursor-not-allowed"
+                                : "border-border bg-background text-muted-foreground hover:bg-muted"
+                            }`}
+                          >
+                            <Shield className="h-4 w-4 mx-auto mb-1" />
+                            Admin
+                          </button>
+                        </div>
+                        {selectedRole === "admin" && !hasAdmin && (
+                          <p className="text-xs text-amber-600">
+                            ⚠️ First admin gets full system access
+                          </p>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Password Strength (Register Only) */}
+                  <AnimatePresence>
+                    {!isLogin && password && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <PasswordStrength password={password} />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Remember Me & Forgot Password */}
+                  <div className="flex flex-wrap items-center justify-between gap-y-2">
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        className="rounded border-border text-primary focus:ring-primary/20"
+                        disabled={isLoading}
+                      />
+                      <span className="text-muted-foreground">Remember me</span>
+                    </label>
+                    {isLogin && (
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        className="text-sm text-primary hover:underline"
+                        disabled={isLoading}
+                      >
+                        Forgot password?
+                      </button>
                     )}
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Role Selection (Register Only) */}
-            <AnimatePresence>
-              {!isLogin && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="space-y-2"
-                >
-                  <label className="text-sm font-medium text-foreground">Account Type</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedRole("customer")}
-                      className={`rounded-lg border p-3 text-sm font-medium transition-colors ${
-                        selectedRole === "customer"
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border bg-background text-muted-foreground hover:bg-muted"
-                      }`}
-                      disabled={isLoading}
-                    >
-                      <UserCheck className="h-4 w-4 mx-auto mb-1" />
-                      Customer
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedRole("admin")}
-                      disabled={hasAdmin || isLoading}
-                      className={`rounded-lg border p-3 text-sm font-medium transition-colors ${
-                        selectedRole === "admin"
-                          ? "border-primary bg-primary/10 text-primary"
-                          : hasAdmin
-                          ? "border-border bg-muted text-muted-foreground cursor-not-allowed"
-                          : "border-border bg-background text-muted-foreground hover:bg-muted"
-                      }`}
-                    >
-                      <Shield className="h-4 w-4 mx-auto mb-1" />
-                      Admin
-                    </button>
-                  </div>
-                  {selectedRole === "admin" && !hasAdmin && (
-                    <p className="text-xs text-amber-600">
-                      ⚠️ First admin gets full system access
-                    </p>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Password Strength (Register Only) */}
-            <AnimatePresence>
-              {!isLogin && password && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden"
-                >
-                  <PasswordStrength password={password} />
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Remember Me & Forgot Password */}
-            <div className="flex flex-wrap items-center justify-between gap-y-2">
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded border-border text-primary focus:ring-primary/20"
-                  disabled={isLoading}
-                />
-                <span className="text-muted-foreground">Remember me</span>
-              </label>
-              {isLogin && (
-                <button
-                  type="button"
-                  onClick={handleForgotPassword}
-                  className="text-sm text-primary hover:underline"
-                  disabled={isLoading}
-                >
-                  Forgot password?
-                </button>
-              )}
-            </div>
-
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || isResetting}
               className="flex w-full items-center justify-center gap-2 rounded-xl gradient-warm py-3.5 font-semibold text-primary-foreground transition-all hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isLoading ? (
+              {isLoading || isResetting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  {isLogin ? "Signing in..." : "Creating account..."}
+                  {isForgotPasswordFlow ? "Sending Link..." : (isLogin ? "Signing in..." : "Creating account...")}
                 </>
               ) : (
                 <>
-                  {isLogin ? "Sign In" : "Create Account"}
+                  {isForgotPasswordFlow ? "Send Reset Link" : (isLogin ? "Sign In" : "Create Account")}
                 </>
               )}
             </button>
@@ -442,14 +477,26 @@ const AuthPage = () => {
 
           {/* Switch Form */}
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-            <button 
-              onClick={() => setIsLogin(!isLogin)} 
-              className="font-semibold text-primary hover:underline"
-              disabled={isLoading}
-            >
-              {isLogin ? "Sign up" : "Sign in"}
-            </button>
+            {isForgotPasswordFlow ? (
+              <button 
+                onClick={() => setIsForgotPasswordFlow(false)} 
+                className="font-semibold text-primary hover:underline"
+                disabled={isLoading || isResetting}
+              >
+                Back to sign in
+              </button>
+            ) : (
+              <>
+                {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+                <button 
+                  onClick={() => setIsLogin(!isLogin)} 
+                  className="font-semibold text-primary hover:underline"
+                  disabled={isLoading || isResetting}
+                >
+                  {isLogin ? "Sign up" : "Sign in"}
+                </button>
+              </>
+            )}
           </p>
         </div>
       </motion.div>

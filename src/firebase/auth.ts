@@ -12,7 +12,8 @@ import {
   linkWithPopup,
   setPersistence,
   browserLocalPersistence,
-  browserSessionPersistence
+  browserSessionPersistence,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { UserService } from './firestore';
 
@@ -300,9 +301,7 @@ class AuthService {
   // Reset password (sends email)
   async resetPassword(email: string): Promise<{ success: boolean; error?: string }> {
     try {
-      // This would require importing sendPasswordResetEmail from firebase/auth
-      // For now, we'll return a placeholder
-      console.log('Password reset requested for:', email);
+      await sendPasswordResetEmail(auth, email);
       return { success: true };
     } catch (error: any) {
       console.error('Reset password error:', error);

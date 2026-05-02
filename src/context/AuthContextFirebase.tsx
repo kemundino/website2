@@ -32,6 +32,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string, role?: "customer" | "admin", rememberMe?: boolean) => Promise<boolean>;
   loginWithGoogle: (rememberMe?: boolean) => Promise<boolean>;
   loginWithGitHub: (rememberMe?: boolean) => Promise<boolean>;
+  resetPassword: (email: string) => Promise<boolean>;
   logout: () => void;
   updateProfile: (data: Partial<User>) => Promise<boolean>;
   orders: Order[];
@@ -396,6 +397,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user]);
 
+  const resetPassword = useCallback(async (email: string) => {
+    try {
+      setError(null);
+      const result = await authService.resetPassword(email);
+      if (!result.success) {
+        setError(result.error || 'Failed to send reset email');
+        return false;
+      }
+      return true;
+    } catch (err: any) {
+      setError(err.message || 'Failed to send reset email');
+      return false;
+    }
+  }, []);
+
   const clearError = useCallback(() => {
     setError(null);
   }, []);
@@ -443,6 +459,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       register, 
       loginWithGoogle,
       loginWithGitHub,
+      resetPassword,
       logout, 
       updateProfile,
       orders: [] as Order[], 

@@ -29,6 +29,10 @@ const Navbar = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  if (location.pathname.startsWith('/admin')) {
+    return null;
+  }
+
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between">

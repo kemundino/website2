@@ -13,12 +13,12 @@ export interface Order {
   }>;
   total: number;
   status:
-    | 'pending'
-    | 'processing'
-    | 'on_the_way'
-    | 'delivered'
-    | 'awaiting_confirmation'
-    | 'confirmed';
+  | 'pending'
+  | 'processing'
+  | 'on_the_way'
+  | 'delivered'
+  | 'awaiting_confirmation'
+  | 'awaiting_confirmation';
   createdAt: string;
   deliveryAddress: string;
   customerConfirmed?: boolean;
@@ -46,7 +46,7 @@ function normalizeStatus(raw: string | undefined): Order['status'] {
   if (s === 'on_the_way' || s === 'on-the-way') return 'on_the_way';
   if (s === 'delivered') return 'delivered';
   if (s === 'awaiting_confirmation') return 'awaiting_confirmation';
-  if (s === 'confirmed') return 'confirmed';
+  if (s === 'confirmed') return 'pending'; // Fallback for legacy status
   return 'pending';
 }
 

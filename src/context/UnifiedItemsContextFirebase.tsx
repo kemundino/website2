@@ -15,6 +15,8 @@ export interface UnifiedItem {
   isVeg?: boolean;
   isBestseller?: boolean;
   tag: 'regular' | 'custom' | 'special';
+  stock?: number;
+  unit?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -45,6 +47,8 @@ const convertFirestoreItem = (doc: any): UnifiedItem => ({
   isVeg: doc.isVeg || false,
   isBestseller: doc.isBestseller || false,
   tag: doc.tag || 'regular',
+  stock: doc.stock ?? 100,
+  unit: doc.unit || 'portions',
   createdAt: doc.createdAt?.toDate?.()?.toISOString() || doc.createdAt || new Date().toISOString(),
   updatedAt: doc.updatedAt?.toDate?.()?.toISOString() || doc.updatedAt || new Date().toISOString()
 });

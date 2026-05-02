@@ -1,59 +1,39 @@
 import { useState } from 'react'
-import { useUnifiedItems } from '@/context/UnifiedItemsContext'
+import { useUnifiedItems, UnifiedItem } from '@/context/UnifiedItemsContext'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { AlertCircle, Package, ArrowUpCircle, ArrowDownCircle, Search, RefreshCcw } from 'lucide-react'
+import { AlertCircle, Package, ArrowUpCircle, ArrowDownCircle, Search, RefreshCcw, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
 
-interface InventoryItem {
-  id: string
-  name: string
-  category: string
-  stock: number
-  minStock: number
-  lastUpdated: string
-  tag: 'regular' | 'custom' | 'special'
-}
-
 const InventoryManagement = () => {
-  const { items } = useUnifiedItems()
+  const { items, updateItem } = useUnifiedItems()
   const [search, setSearch] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValue, setEditValue] = useState<number>(0)
 
-  // Convert unified items to inventory format
-  const inventory: InventoryItem[] = items.map(item => ({
-    id: item.id,
-    name: item.name,
-    category: item.category || 'Uncategorized',
-    stock: Math.floor(Math.random() * 100) + 10, // Random stock for demo
-    minStock: 20,
-    lastUpdated: new Date().toISOString(),
-    tag: item.tag
-  }))
-
-  const filteredInventory = inventory.filter(item => 
+  const filteredInventory = items.filter(item => 
     item.name.toLowerCase().includes(search.toLowerCase()) ||
-    item.category.toLowerCase().includes(search.toLowerCase())
+    (item.category || '').toLowerCase().includes(search.toLowerCase())
   )
 
-  const handleUpdateStock = (id: string) => {
-    // In a real app, this would update the inventory in the database
-    // For now, we'll just show a success message
-    toast.success('Stock updated successfully')
-    setEditingId(null)
+  const handleUpdateStock = (id: string, newStock: number) => {
+    const success = updateItem(id, { stock: newStock })
+    if (success) {
+      toast.success('Stock updated successfully')
+      setEditingId(null)
+    }
   }
 
-  const isLowStock = (stock: number, minStock: number) => stock <= minStock && stock > 0
+  const isLowStock = (stock: number) => stock <= 20 && stock > 0
   const isOutOfStock = (stock: number) => stock === 0
 
   const getTagBadge = (tag: string) => {
     switch (tag) {
       case 'regular':
-        return <Badge variant="secondary">📋 Regular</Badge>
+        return <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200">📋 Regular</Badge>
       case 'custom':
         return <Badge className="bg-purple-500 text-white">⭐ Custom</Badge>
       case 'special':
@@ -63,88 +43,79 @@ const InventoryManagement = () => {
     }
   }
 
-  const lowStockItems = inventory.filter(isLowStock)
+  const lowStockItems = items.filter(item => isLowStock(item.stock || 0) || isOutOfStock(item.stock || 0))
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500">
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-orange-50 border-orange-200">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-orange-800">Low Stock Alert</p>
-                <h3 className="text-2xl font-bold text-orange-900 mt-1">{lowStockItems.length} Items</h3>
-              </div>
-              <div className="p-3 bg-white rounded-xl shadow-sm">
-                <AlertCircle className="h-6 w-6 text-orange-600" />
-              </div>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="bg-rose-50 border-rose-100 shadow-sm rounded-[2rem] overflow-hidden relative">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+             <AlertCircle size={80} />
+          </div>
+          <CardContent className="pt-8">
+            <p className="text-xs font-black text-rose-400 uppercase tracking-widest">Action Required</p>
+            <h3 className="text-4xl font-black text-rose-900 mt-2">{lowStockItems.length}</h3>
+            <p className="text-sm font-bold text-rose-800/60 mt-1">Low stock alerts</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-blue-800">Total Items</p>
-                <h3 className="text-2xl font-bold text-blue-900 mt-1">{inventory.length}</h3>
-              </div>
-              <div className="p-3 bg-white rounded-xl shadow-sm">
-                <Package className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
+        <Card className="bg-blue-50 border-blue-100 shadow-sm rounded-[2rem] overflow-hidden relative">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+             <Package size={80} />
+          </div>
+          <CardContent className="pt-8">
+            <p className="text-xs font-black text-blue-400 uppercase tracking-widest">Inventory Size</p>
+            <h3 className="text-4xl font-black text-blue-900 mt-2">{items.length}</h3>
+            <p className="text-sm font-bold text-blue-800/60 mt-1">Unique creations</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-green-50 border-green-200">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-green-800">In Stock Portions</p>
-                <h3 className="text-2xl font-bold text-green-900 mt-1">
-                  {inventory.reduce((sum, item) => sum + item.stock, 0)}
-                </h3>
-              </div>
-              <div className="p-3 bg-white rounded-xl shadow-sm">
-                <RefreshCcw className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
+        <Card className="bg-emerald-50 border-emerald-100 shadow-sm rounded-[2rem] overflow-hidden relative">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+             <RefreshCcw size={80} />
+          </div>
+          <CardContent className="pt-8">
+            <p className="text-xs font-black text-emerald-400 uppercase tracking-widest">Supply Level</p>
+            <h3 className="text-4xl font-black text-emerald-900 mt-2">
+              {items.reduce((sum, item) => sum + (item.stock || 0), 0)}
+            </h3>
+            <p className="text-sm font-bold text-emerald-800/60 mt-1">Total portions available</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[3rem] overflow-hidden bg-white">
+        <CardHeader className="p-8 sm:p-12 bg-slate-50/50 border-b border-slate-100">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <CardTitle>Inventory List</CardTitle>
-              <CardDescription>Manage your stock levels for all menu items</CardDescription>
+              <CardTitle className="text-2xl font-black text-slate-900 tracking-tight">Stock Control Matrix</CardTitle>
+              <CardDescription className="text-slate-500 font-bold mt-1">Monitor and calibrate supply levels across your menu</CardDescription>
             </div>
-            <div className="relative w-full md:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
-                placeholder="Search inventory..."
+                placeholder="Find a creation..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
+                className="h-14 pl-12 pr-6 rounded-2xl bg-white border-slate-200 focus:border-primary/20 focus:ring-0 font-bold text-slate-900 shadow-sm transition-all"
               />
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left pb-3 font-semibold text-muted-foreground">Item Name</th>
-                  <th className="text-left pb-3 font-semibold text-muted-foreground">Category</th>
-                  <th className="text-left pb-3 font-semibold text-muted-foreground">Stock</th>
-                  <th className="text-left pb-3 font-semibold text-muted-foreground">Status</th>
-                  <th className="text-right pb-3 font-semibold text-muted-foreground">Actions</th>
+                <tr className="bg-slate-50/30">
+                  <th className="text-left px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Creation</th>
+                  <th className="text-left px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Classification</th>
+                  <th className="text-left px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Supply Level</th>
+                  <th className="text-left px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                  <th className="text-right px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Calibration</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-slate-50">
                 <AnimatePresence mode="popLayout">
                   {filteredInventory.map((item) => (
                     <motion.tr 
@@ -153,74 +124,80 @@ const InventoryManagement = () => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="group hover:bg-muted/50 transition-colors"
+                      className="group hover:bg-slate-50/50 transition-colors"
                     >
-                      <td className="py-4 font-medium">{item.name}</td>
-                      <td className="py-4 text-muted-foreground capitalize">{item.category}</td>
-                      <td className="py-4">
+                      <td className="px-8 py-6">
+                         <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
+                               <img src={item.image} alt="" className="w-full h-full object-cover" />
+                            </div>
+                            <div>
+                               <p className="font-black text-slate-900 leading-none">{item.name}</p>
+                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">{item.category}</p>
+                            </div>
+                         </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        {getTagBadge(item.tag)}
+                      </td>
+                      <td className="px-8 py-6">
                         {editingId === item.id ? (
                           <div className="flex items-center gap-2">
                             <Input
                               type="number"
                               value={editValue}
                               onChange={(e) => setEditValue(parseInt(e.target.value) || 0)}
-                              className="w-20 h-8"
+                              className="w-24 h-10 rounded-lg border-primary/20 font-black"
                             />
-                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => setEditingId(null)}>✕</Button>
+                            <Button size="icon" variant="ghost" className="h-10 w-10 p-0 rounded-lg" onClick={() => setEditingId(null)}>
+                               <X className="h-4 w-4" />
+                            </Button>
                           </div>
                         ) : (
-                          <span className="font-semibold">{item.stock} {item.unit}</span>
+                          <span className="font-black text-slate-700 text-lg">{item.stock || 0} <span className="text-[10px] uppercase text-slate-400 ml-1">{item.unit || 'portions'}</span></span>
                         )}
                       </td>
-                      <td className="py-4">
-                        {isOutOfStock(item) ? (
-                          <Badge variant="destructive" className="bg-red-100 text-red-700 hover:bg-red-100 border-red-200">Out of Stock</Badge>
-                        ) : isLowStock(item) ? (
-                          <Badge variant="outline" className="bg-orange-100 text-orange-700 border-orange-200">Low Stock</Badge>
+                      <td className="px-8 py-6">
+                        {isOutOfStock(item.stock || 0) ? (
+                          <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-100 border-none px-3 py-1 rounded-lg font-black uppercase text-[10px]">Depleted</Badge>
+                        ) : isLowStock(item.stock || 0) ? (
+                          <Badge className="bg-amber-100 text-amber-700 border-none px-3 py-1 rounded-lg font-black uppercase text-[10px]">Low Supply</Badge>
                         ) : (
-                          <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">Normal</Badge>
+                          <Badge className="bg-emerald-100 text-emerald-700 border-none px-3 py-1 rounded-lg font-black uppercase text-[10px]">Optimum</Badge>
                         )}
                       </td>
-                      <td className="py-4 text-right">
+                      <td className="px-8 py-6 text-right">
                         {editingId === item.id ? (
                           <Button 
                             size="sm" 
-                            className="h-8" 
-                            onClick={() => handleUpdateStock(item.id)}
+                            className="h-10 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black" 
+                            onClick={() => handleUpdateStock(item.id, editValue)}
                           >
-                            Save
+                            Sync
                           </Button>
                         ) : (
-                          <div className="flex justify-end gap-1">
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              className="h-8 w-8 p-0 text-blue-600"
-                              onClick={() => {
-                                updateStock(item.id, item.stock + 10)
-                                toast.success('Added 10 units')
-                              }}
+                          <div className="flex justify-end gap-2">
+                            <button 
+                              className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-all active:scale-90"
+                              onClick={() => handleUpdateStock(item.id, (item.stock || 0) + 10)}
+                              title="Add 10 portions"
                             >
-                              <ArrowUpCircle className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              className="h-8 w-8 p-0 text-orange-600"
-                              onClick={() => {
-                                updateStock(item.id, item.stock - 5)
-                                toast.info('Removed 5 units')
-                              }}
+                              <Plus size={18} />
+                            </button>
+                            <button 
+                              className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all active:scale-90"
+                              onClick={() => handleUpdateStock(item.id, Math.max(0, (item.stock || 0) - 10))}
+                              title="Remove 10 portions"
                             >
-                              <ArrowDownCircle className="h-4 w-4" />
-                            </Button>
+                              <Trash2 size={18} />
+                            </button>
                             <Button 
                               size="sm" 
                               variant="ghost" 
-                              className="h-8 w-8 p-0"
+                              className="h-10 px-4 rounded-xl font-black text-slate-400 hover:text-primary transition-all"
                               onClick={() => {
                                 setEditingId(item.id)
-                                setEditValue(item.stock)
+                                setEditValue(item.stock || 0)
                               }}
                             >
                               Edit
@@ -234,10 +211,20 @@ const InventoryManagement = () => {
               </tbody>
             </table>
           </div>
+          {filteredInventory.length === 0 && (
+            <div className="py-20 text-center">
+               <Package className="h-12 w-12 mx-auto text-slate-200 mb-4" />
+               <p className="text-slate-400 font-bold">No matching creations found in matrix</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
   )
 }
+
+const X = ({ size, className }: { size?: number, className?: string }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+)
 
 export default InventoryManagement

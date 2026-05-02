@@ -117,17 +117,16 @@ const OrderDemo = () => {
           <div className="space-y-3">
             <h4 className="font-semibold">Try the workflow:</h4>
             {demoSteps.map((step, index) => (
-              <div 
+              <div
                 key={index}
-                className={`flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg border gap-3 ${
-                  index === currentDemo ? 'bg-blue-50 border-blue-200' : 'bg-white'
-                }`}
+                className={`flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg border gap-3 ${index === currentDemo ? 'bg-blue-50 border-blue-200' : 'bg-white'
+                  }`}
               >
                 <div className="flex-1">
                   <h5 className="font-medium text-sm">{step.title}</h5>
                   <p className="text-sm text-muted-foreground">{step.description}</p>
                 </div>
-                <Button 
+                <Button
                   onClick={step.action}
                   disabled={index > currentDemo}
                   size="sm"

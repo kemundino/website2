@@ -18,7 +18,7 @@ interface Order {
     price: number;
   }>;
   total: number;
-  status: 'pending' | 'processing' | 'on_the_way' | 'delivered' | 'awaiting_confirmation' | 'confirmed';
+  status: 'pending' | 'processing' | 'on_the_way' | 'delivered' | 'awaiting_confirmation';
   createdAt: string;
   deliveryAddress: string;
   customerConfirmed?: boolean;
@@ -28,9 +28,8 @@ const statusConfig = {
   pending: { label: "Pending", icon: Package, color: "text-secondary", step: 0 },
   processing: { label: "Processing", icon: Clock, color: "text-primary", step: 1 },
   on_the_way: { label: "On the Way", icon: Truck, color: "text-accent", step: 2 },
-  confirmed: { label: "Confirmed", icon: Package, color: "text-purple-600", step: 3 },
-  awaiting_confirmation: { label: "Awaiting Confirmation", icon: Package, color: "text-purple-600", step: 4 },
-  delivered: { label: "Delivered", icon: CheckCircle2, color: "text-green-600", step: 5 },
+  awaiting_confirmation: { label: "Awaiting Confirmation", icon: Package, color: "text-purple-600", step: 3 },
+  delivered: { label: "Delivered", icon: CheckCircle2, color: "text-green-600", step: 4 },
 };
 
 const OrdersPage = () => {
@@ -186,7 +185,7 @@ const OrdersPage = () => {
 
                 {/* Progress bar */}
                 <div className="mb-4 flex gap-1">
-                  {[0, 1, 2, 3, 4, 5].map((step) => (
+                  {[0, 1, 2, 3, 4].map((step) => (
                     <div
                       key={step}
                       className={`h-1.5 flex-1 rounded-full transition-colors ${

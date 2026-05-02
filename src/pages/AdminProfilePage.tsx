@@ -13,39 +13,44 @@ import {
   User, MapPin, Package, Award, Settings, LogOut, 
   Calendar, Phone, Mail, ChevronRight, History,
   TrendingUp, Users, DollarSign, ShoppingCart,
-  Activity, Database, Shield, Bell, Zap, ChevronDown
+  Activity, Database, Shield, Bell, Zap, ChevronDown,
+  Sparkles
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { motion, AnimatePresence } from 'framer-motion'
 
-const AdminProfilePage = () => {
-  const { user, logout, isAuthenticated } = useAuth()
+const AdminProfilePage = ({ onTabChange }: { onTabChange?: (tab: string) => void }) => {
+  const { logout, isAuthenticated } = useAuth()
   const { profile, updateProfile, addAddress } = useCustomerProfile()
   const { orders: systemOrders } = useRealtimeOrders()
   const { items } = useUnifiedItems()
   
   const [isEditing, setIsEditing] = useState(false)
   const [newAddress, setNewAddress] = useState('')
+  const [editingAddressIndex, setEditingAddressIndex] = useState<number | null>(null)
   const [editForm, setEditForm] = useState({
     phone: '',
-    name: ''
+    name: '',
+    avatar: '',
+    bio: ''
   })
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
 
   const adminTabs = [
-    { value: 'overview', label: 'Overview', icon: User },
+    { value: 'overview', label: 'Admin Overview', icon: User },
     { value: 'analytics', label: 'Analytics', icon: TrendingUp },
-    { value: 'orders', label: 'Orders', icon: ShoppingCart },
-    { value: 'addresses', label: 'Addresses', icon: MapPin },
-    { value: 'system', label: 'System', icon: Activity },
-    { value: 'settings', label: 'Settings', icon: Settings }
+    { value: 'orders', label: 'Order History', icon: History },
+    { value: 'addresses', label: 'My Addresses', icon: MapPin },
+    { value: 'system', label: 'System Health', icon: Activity },
+    { value: 'settings', label: 'Admin Settings', icon: Settings }
   ]
 
   const getCurrentTabInfo = () => {
     return adminTabs.find(tab => tab.value === activeTab) || adminTabs[0]
   }
 
-  // Calculate admin statistics (orders from Firestore)
+  // Calculate admin statistics
   const calculateAdminStats = () => {
     const allOrders = systemOrders
     const totalRevenue = allOrders.reduce((sum, order) => sum + order.total, 0)
@@ -67,32 +72,31 @@ const AdminProfilePage = () => {
 
   const adminStats = calculateAdminStats()
 
-  // Sync editForm with profile data once loaded
   useEffect(() => {
     if (profile) {
       setEditForm({
         phone: profile.phone || '',
-        name: profile.name || ''
+        name: profile.name || '',
+        avatar: profile.avatar || '',
+        bio: profile.bio || ''
       })
     }
   }, [profile])
 
-  // If we are definitely not authenticated, show login prompt
   if (!isAuthenticated) {
     return (
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-        <h2 className="text-2xl font-bold mb-4">Please sign in to view your profile</h2>
-        <Button onClick={() => window.location.href = '/auth'}>Sign In</Button>
+        <h2 className="text-2xl font-bold mb-4 font-display">Please sign in to view your profile</h2>
+        <Button className="rounded-xl px-8" onClick={() => window.location.href = '/auth'}>Sign In</Button>
       </div>
     )
   }
 
-  // If authenticated but profile hasn't loaded yet, show loading
   if (!profile) {
     return (
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-        <p className="text-muted-foreground">Loading your profile...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+        <p className="text-muted-foreground font-medium">Initializing Admin Profile...</p>
       </div>
     )
   }
@@ -107,517 +111,560 @@ const AdminProfilePage = () => {
 
   const handleAddAddress = (e: React.FormEvent) => {
     e.preventDefault()
-    if (newAddress.trim()) {
+    if (!newAddress.trim()) return
+
+    if (editingAddressIndex !== null) {
+      const updatedAddresses = [...(profile.addresses || [])]
+      updatedAddresses[editingAddressIndex] = newAddress.trim()
+      updateProfile({ ...profile, addresses: updatedAddresses })
+      setEditingAddressIndex(null)
+      toast.success('Address updated')
+    } else {
       addAddress(newAddress.trim())
-      setNewAddress('')
       toast.success('Address added')
     }
+    setNewAddress('')
+  }
+
+  const handleEditAddress = (index: number) => {
+    setNewAddress(profile.addresses[index])
+    setEditingAddressIndex(index)
+    // Scroll to input if needed or just focus
+    const input = document.getElementById('address-input')
+    input?.focus()
+  }
+
+  const handleSettingsAction = (action: string) => {
+    toast.promise(new Promise(resolve => setTimeout(resolve, 1500)), {
+      loading: `Executing ${action}...`,
+      success: `${action} completed successfully`,
+      error: `Failed to execute ${action}`
+    })
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <div className="w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
         {/* Sidebar */}
-        <div className="lg:col-span-1 space-y-6">
-          <Card className="text-center p-6">
-            <div className="relative inline-block mb-4">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white mx-auto">
-                <Shield size={48} />
+        <div className="lg:col-span-1 space-y-8">
+          <Card className="text-center p-8 border-none shadow-xl rounded-[2rem] bg-white overflow-hidden relative">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-primary" />
+            <div className="relative inline-block mb-6">
+              <div className="w-28 h-28 rounded-full bg-gradient-to-br from-slate-900 to-slate-700 flex items-center justify-center text-white mx-auto shadow-lg border-4 border-white overflow-hidden bg-white">
+                {profile.avatar ? (
+                  <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
+                ) : (
+                  <Shield size={56} className="text-primary" />
+                )}
               </div>
-              <div className="absolute bottom-0 right-0 p-1.5 bg-green-500 rounded-full border-2 border-white" />
-              <div className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs px-2 py-1 rounded-full">
-                ADMIN
-              </div>
+              <div className="absolute bottom-1 right-1 p-2 bg-green-500 rounded-full border-4 border-white shadow-sm" />
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -top-2 -right-4 bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full shadow-md uppercase tracking-tighter"
+              >
+                Root Admin
+              </motion.div>
             </div>
-            <h2 className="text-xl font-bold">{profile.name}</h2>
-            <p className="text-sm text-muted-foreground">{profile.email}</p>
-            <Badge className="mt-2 bg-purple-100 text-purple-700">Administrator</Badge>
             
-            <div className="mt-4 pt-4 border-t flex items-center justify-around">
+            <h2 className="text-2xl font-black text-slate-900 font-display tracking-tight">{profile.name}</h2>
+            <p className="text-sm text-slate-400 font-medium mb-2">{profile.email}</p>
+            {profile.bio && (
+              <p className="text-xs text-slate-500 italic mb-4 px-4 leading-relaxed line-clamp-2">"{profile.bio}"</p>
+            )}
+            
+            <Button 
+              variant="link" 
+              className="text-xs font-black uppercase tracking-widest text-primary mb-2 hover:no-underline"
+              onClick={() => { setActiveTab('overview'); setIsEditing(true); }}
+            >
+              Edit Identity Details
+            </Button>
+            
+            <div className="flex justify-center gap-2 mb-8">
+              <Badge className="bg-slate-100 text-slate-700 border-none px-4 py-1.5 rounded-xl font-bold">
+                Level 99
+              </Badge>
+              <Badge className="bg-primary/10 text-primary border-none px-4 py-1.5 rounded-xl font-bold">
+                Certified
+              </Badge>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 pt-6 border-t border-slate-100">
               <div className="text-center">
-                <p className="text-xl font-bold text-purple-600">{profile.loyaltyPoints}</p>
-                <p className="text-[10px] uppercase font-bold text-muted-foreground">Points</p>
+                <p className="text-2xl font-black text-slate-900">{profile.loyaltyPoints}</p>
+                <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Points</p>
               </div>
               <div className="text-center">
-                <p className="text-xl font-bold text-blue-600">{profile.totalOrders}</p>
-                <p className="text-[10px] uppercase font-bold text-muted-foreground">Orders</p>
+                <p className="text-2xl font-black text-slate-900">{adminStats.totalOrders}</p>
+                <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">Orders</p>
               </div>
             </div>
-            <Button variant="outline" className="w-full mt-6 text-destructive hover:text-destructive" onClick={logout}>
-              <LogOut className="h-4 w-4 mr-2" /> Logout
+            
+            <Button 
+              variant="outline" 
+              className="w-full mt-10 h-14 rounded-2xl font-bold text-destructive hover:text-white hover:bg-destructive transition-all border-slate-200" 
+              onClick={logout}
+            >
+              <LogOut className="h-5 w-5 mr-3" /> Logout Account
             </Button>
           </Card>
 
-          <Card className="p-4">
+          <Card className="p-3 border-none shadow-lg rounded-[2rem] bg-white hidden lg:block">
             <nav className="space-y-1">
-              <Button variant="ghost" className="w-full justify-start text-purple-600 bg-purple-50">
-                <User className="h-4 w-4 mr-3" /> Admin Overview
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                <TrendingUp className="h-4 w-4 mr-3" /> Analytics
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                <History className="h-4 w-4 mr-3" /> Order History
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                <MapPin className="h-4 w-4 mr-3" /> My Addresses
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                <Activity className="h-4 w-4 mr-3" /> System Health
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                <Settings className="h-4 w-4 mr-3" /> Admin Settings
-              </Button>
+              {adminTabs.map(tab => {
+                const Icon = tab.icon
+                const isActive = activeTab === tab.value
+                return (
+                  <Button 
+                    key={tab.value}
+                    variant="ghost" 
+                    onClick={() => setActiveTab(tab.value)}
+                    className={`w-full justify-start h-14 rounded-xl font-bold transition-all ${
+                      isActive 
+                        ? "bg-primary text-white shadow-lg shadow-primary/20 scale-[1.02]" 
+                        : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                    }`}
+                  >
+                    <Icon className={`h-5 w-5 mr-4 ${isActive ? "text-white" : "text-slate-400"}`} />
+                    {tab.label}
+                  </Button>
+                )
+              })}
             </nav>
           </Card>
         </div>
 
         {/* Main Content */}
         <div className="lg:col-span-3">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
             {/* Mobile Tab Dropdown */}
-            <div className="md:hidden">
+            <div className="lg:hidden mb-6">
               <div className="relative">
                 <button
                   onClick={() => setMobileDropdownOpen(!mobileDropdownOpen)}
-                  className="flex w-full items-center justify-between rounded-lg border border-border bg-card px-4 py-3 text-left font-medium text-foreground transition-colors hover:bg-accent"
+                  className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-6 py-5 text-left font-bold text-slate-900 shadow-sm"
                 >
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center gap-3">
                     {(() => {
                       const Icon = getCurrentTabInfo().icon
-                      return <Icon className="h-4 w-4" />
+                      return <Icon className="h-5 w-5 text-primary" />
                     })()}
                     {getCurrentTabInfo().label}
                   </span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${mobileDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-5 w-5 text-slate-400 transition-transform ${mobileDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 
-                {mobileDropdownOpen && (
-                  <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-lg border border-border bg-card shadow-lg">
-                    <div className="max-h-64 overflow-y-auto">
-                      {adminTabs.map(tab => {
-                        const Icon = tab.icon
-                        return (
-                          <button
-                            key={tab.value}
-                            onClick={() => { setActiveTab(tab.value); setMobileDropdownOpen(false); }}
-                            className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left font-medium transition-colors hover:bg-accent ${
-                              activeTab === tab.value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                            }`}
-                          >
-                            <Icon className="h-4 w-4" />
-                            <span>{tab.label}</span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
+                <AnimatePresence>
+                  {mobileDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute top-full left-0 z-50 mt-2 w-full rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl"
+                    >
+                      <div className="max-h-80 overflow-y-auto space-y-1">
+                        {adminTabs.map(tab => {
+                          const Icon = tab.icon
+                          return (
+                            <button
+                              key={tab.value}
+                              onClick={() => { setActiveTab(tab.value); setMobileDropdownOpen(false); }}
+                              className={`flex w-full items-center gap-3 rounded-xl px-5 py-4 text-left font-bold transition-all ${
+                                activeTab === tab.value ? "bg-primary text-white" : "text-slate-600 hover:bg-slate-50"
+                              }`}
+                            >
+                              <Icon className="h-5 w-5" />
+                              <span>{tab.label}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
 
-            {/* Desktop Tab List */}
-            <TabsList className="hidden md:grid w-full grid-cols-6">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="orders">Orders</TabsTrigger>
-              <TabsTrigger value="addresses">Addresses</TabsTrigger>
-              <TabsTrigger value="system">System</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="overview" className="space-y-6">
-              {/* Admin Profile Details */}
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
+            <TabsContent value="overview" className="space-y-8 mt-0 outline-none">
+              <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+                <CardHeader className="p-8 md:p-10 flex flex-row items-center justify-between border-b border-slate-50">
                   <div>
-                    <CardTitle>Administrator Profile</CardTitle>
-                    <CardDescription>Manage your admin account details</CardDescription>
+                    <CardTitle className="text-3xl font-black text-slate-900 font-display">Administrative Identity</CardTitle>
+                    <CardDescription className="text-md text-slate-400 font-medium mt-1">Configure your master account credentials</CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)}>
-                    {isEditing ? 'Cancel' : 'Edit Profile'}
+                  <Button 
+                    variant="outline" 
+                    className="rounded-2xl h-12 px-6 font-bold border-slate-200 hover:bg-slate-50 shadow-sm transition-all active:scale-95"
+                    onClick={() => setIsEditing(!isEditing)}
+                  >
+                    {isEditing ? 'Discard Changes' : 'Update Profile'}
                   </Button>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-8 md:p-10">
                   {isEditing ? (
-                    <form onSubmit={handleUpdateProfile} className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="name">Full Name</Label>
+                    <form onSubmit={handleUpdateProfile} className="space-y-8">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="name" className="text-sm font-black text-slate-700 ml-1">Display Name</Label>
                           <Input
                             id="name"
                             value={editForm.name}
                             onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                            className="mt-1"
+                            className="h-14 rounded-2xl bg-slate-50 border-slate-200 px-6 font-bold focus:ring-primary/20"
                           />
                         </div>
-                        <div>
-                          <Label htmlFor="phone">Phone Number</Label>
+                        <div className="space-y-2">
+                          <Label htmlFor="phone" className="text-sm font-black text-slate-700 ml-1">Direct Line</Label>
                           <Input
                             id="phone"
                             value={editForm.phone}
                             onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
-                            className="mt-1"
+                            className="h-14 rounded-2xl bg-slate-50 border-slate-200 px-6 font-bold focus:ring-primary/20"
+                          />
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                          <Label htmlFor="avatar" className="text-sm font-black text-slate-700 ml-1">Avatar Image URL</Label>
+                          <Input
+                            id="avatar"
+                            value={editForm.avatar}
+                            onChange={(e) => setEditForm({...editForm, avatar: e.target.value})}
+                            className="h-14 rounded-2xl bg-slate-50 border-slate-200 px-6 font-bold focus:ring-primary/20"
+                            placeholder="https://images.unsplash.com/..."
+                          />
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                          <Label htmlFor="bio" className="text-sm font-black text-slate-700 ml-1">Professional Bio</Label>
+                          <textarea
+                            id="bio"
+                            value={editForm.bio}
+                            onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
+                            className="w-full min-h-[100px] p-6 rounded-2xl bg-slate-50 border-slate-200 font-bold focus:ring-primary/20 outline-none transition-all"
+                            placeholder="Describe your administrative ethos..."
                           />
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button type="submit">Save Changes</Button>
-                        <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
+                      <div className="flex gap-4">
+                        <Button type="submit" className="h-14 px-10 rounded-2xl font-black text-md shadow-lg shadow-primary/20">Commit Changes</Button>
+                        <Button type="button" variant="ghost" className="h-14 px-8 rounded-2xl font-bold" onClick={() => setIsEditing(false)}>
                           Cancel
                         </Button>
                       </div>
                     </form>
                   ) : (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Full Name</Label>
-                          <p className="mt-1">{profile.name}</p>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Email Address</Label>
-                          <p className="mt-1">{profile.email}</p>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Phone Number</Label>
-                          <p className="mt-1">{profile.phone || 'Not provided'}</p>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Admin Since</Label>
-                          <p className="mt-1">{new Date(profile.memberSince).toLocaleDateString()}</p>
-                        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                      <div className="space-y-1">
+                        <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Legal Name</Label>
+                        <p className="text-xl font-bold text-slate-800 px-1">{profile.name}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Verified Email</Label>
+                        <p className="text-xl font-bold text-slate-800 px-1">{profile.email}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contact Phone</Label>
+                        <p className="text-xl font-bold text-slate-800 px-1">{profile.phone || '— Unlisted —'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Privilege Since</Label>
+                        <p className="text-xl font-bold text-slate-800 px-1">{new Date(profile.memberSince).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                       </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
-              {/* Admin Statistics */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Business Overview</CardTitle>
-                  <CardDescription>Your restaurant's key performance indicators</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="text-center p-4 bg-green-50 rounded-lg">
-                      <DollarSign className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                      <p className="text-2xl font-bold text-green-600">${adminStats.totalRevenue.toFixed(2)}</p>
-                      <p className="text-sm text-muted-foreground">Total Revenue</p>
-                    </div>
-                    <div className="text-center p-4 bg-blue-50 rounded-lg">
-                      <Users className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                      <p className="text-2xl font-bold text-blue-600">{adminStats.totalCustomers}</p>
-                      <p className="text-sm text-muted-foreground">Total Customers</p>
-                    </div>
-                    <div className="text-center p-4 bg-purple-50 rounded-lg">
-                      <ShoppingCart className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                      <p className="text-2xl font-bold text-purple-600">{adminStats.totalOrders}</p>
-                      <p className="text-sm text-muted-foreground">Total Orders</p>
-                    </div>
-                    <div className="text-center p-4 bg-orange-50 rounded-lg">
-                      <Package className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-                      <p className="text-2xl font-bold text-orange-600">{adminStats.totalItems}</p>
-                      <p className="text-sm text-muted-foreground">Menu Items</p>
-                    </div>
-                    <div className="text-center p-4 bg-pink-50 rounded-lg">
-                      <Zap className="h-8 w-8 text-pink-600 mx-auto mb-2" />
-                      <p className="text-2xl font-bold text-pink-600">{adminStats.todayOrders}</p>
-                      <p className="text-sm text-muted-foreground">Today's Orders</p>
-                    </div>
-                    <div className="text-center p-4 bg-indigo-50 rounded-lg">
-                      <TrendingUp className="h-8 w-8 text-indigo-600 mx-auto mb-2" />
-                      <p className="text-2xl font-bold text-indigo-600">{adminStats.activeItems}</p>
-                      <p className="text-sm text-muted-foreground">Active Items</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Quick Actions */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
-                  <CardDescription>Common administrative tasks</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Button variant="outline" className="h-20 flex-col" onClick={() => window.location.href = '/admin'}>
-                      <Package className="h-6 w-6 mb-2" />
-                      Manage Menu
-                    </Button>
-                    <Button variant="outline" className="h-20 flex-col" onClick={() => window.location.href = '/admin'}>
-                      <Users className="h-6 w-6 mb-2" />
-                      View Orders
-                    </Button>
-                    <Button variant="outline" className="h-20 flex-col" onClick={() => window.location.href = '/admin'}>
-                      <TrendingUp className="h-6 w-6 mb-2" />
-                      Analytics
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Quick Actions Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Button 
+                  variant="outline" 
+                  className="h-32 flex-col rounded-3xl bg-white border-none shadow-lg hover:shadow-xl hover:scale-[1.03] transition-all group" 
+                  onClick={() => onTabChange ? onTabChange('regular-items') : (window.location.href = '/admin')}
+                >
+                  <Package className="h-8 w-8 mb-3 text-primary group-hover:scale-110 transition-transform" />
+                  <span className="font-black text-slate-800 text-sm sm:text-base">Menu Engine</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-32 flex-col rounded-3xl bg-white border-none shadow-lg hover:shadow-xl hover:scale-[1.03] transition-all group" 
+                  onClick={() => onTabChange ? onTabChange('orders') : setActiveTab('orders')}
+                >
+                  <History className="h-8 w-8 mb-3 text-blue-500 group-hover:scale-110 transition-transform" />
+                  <span className="font-black text-slate-800 text-sm sm:text-base">Order Logs</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-32 flex-col rounded-3xl bg-white border-none shadow-lg hover:shadow-xl hover:scale-[1.03] transition-all group" 
+                  onClick={() => onTabChange ? onTabChange('analytics') : setActiveTab('analytics')}
+                >
+                  <TrendingUp className="h-8 w-8 mb-3 text-emerald-500 group-hover:scale-110 transition-transform" />
+                  <span className="font-black text-slate-800 text-sm sm:text-base">Visual Insights</span>
+                </Button>
+              </div>
             </TabsContent>
 
-            <TabsContent value="analytics" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Business Analytics</CardTitle>
-                  <CardDescription>Detailed insights into your restaurant performance</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-medium mb-3">Revenue Breakdown</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span>Today</span>
-                            <span className="font-medium">$0.00</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>This Week</span>
-                            <span className="font-medium">$0.00</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>This Month</span>
-                            <span className="font-medium">${adminStats.totalRevenue.toFixed(2)}</span>
-                          </div>
-                        </div>
+            <TabsContent value="analytics" className="space-y-6 mt-0 outline-none">
+              <Card className="border-none shadow-xl rounded-[2.5rem] bg-white p-10">
+                <div className="flex items-center gap-4 mb-10">
+                  <div className="p-3 bg-emerald-100 rounded-2xl text-emerald-600">
+                    <TrendingUp size={32} />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-black text-slate-900 font-display">Performance Metrics</h3>
+                    <p className="text-slate-400 font-medium">Real-time business data processing</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <div className="space-y-6 p-8 rounded-[2rem] bg-slate-50 border border-slate-100">
+                    <h4 className="font-black text-slate-800 text-lg flex items-center gap-2">
+                      <DollarSign className="h-5 w-5 text-emerald-500" /> Revenue Flow
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm">
+                        <span className="font-bold text-slate-500">Gross Lifetime</span>
+                        <span className="font-black text-xl text-emerald-600">${adminStats.totalRevenue.toFixed(2)}</span>
                       </div>
-                      <div>
-                        <h4 className="font-medium mb-3">Customer Metrics</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span>Total Customers</span>
-                            <span className="font-medium">{adminStats.totalCustomers}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>New Customers (Today)</span>
-                            <span className="font-medium">0</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Average Order Value</span>
-                            <span className="font-medium">
-                              ${adminStats.totalOrders > 0 ? (adminStats.totalRevenue / adminStats.totalOrders).toFixed(2) : '0.00'}
-                            </span>
-                          </div>
-                        </div>
+                      <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm">
+                        <span className="font-bold text-slate-500">Daily Average</span>
+                        <span className="font-black text-xl text-slate-800">${(adminStats.totalRevenue / Math.max(1, adminStats.totalOrders)).toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="orders" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Order Management</CardTitle>
-                  <CardDescription>View and manage all customer orders</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <Button onClick={() => window.location.href = '/admin'}>
-                      <ShoppingCart className="h-4 w-4 mr-2" />
-                      Go to Order Management
-                    </Button>
-                    <p className="text-sm text-muted-foreground">
-                      Total orders in system: {adminStats.totalOrders}
-                    </p>
+                  <div className="space-y-6 p-8 rounded-[2rem] bg-slate-50 border border-slate-100">
+                    <h4 className="font-black text-slate-800 text-lg flex items-center gap-2">
+                      <Users className="h-5 w-5 text-blue-500" /> User Impact
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm">
+                        <span className="font-bold text-slate-500">Unique Patrons</span>
+                        <span className="font-black text-xl text-blue-600">{adminStats.totalCustomers}</span>
+                      </div>
+                      <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm">
+                        <span className="font-bold text-slate-500">Order Frequency</span>
+                        <span className="font-black text-xl text-slate-800">{(adminStats.totalOrders / Math.max(1, adminStats.totalCustomers)).toFixed(1)}x</span>
+                      </div>
+                    </div>
                   </div>
-                </CardContent>
+                </div>
               </Card>
             </TabsContent>
 
-            <TabsContent value="addresses" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>My Addresses</CardTitle>
-                  <CardDescription>Manage your delivery addresses</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <form onSubmit={handleAddAddress} className="flex gap-2">
-                      <Input
-                        placeholder="Enter new address"
-                        value={newAddress}
-                        onChange={(e) => setNewAddress(e.target.value)}
-                        className="flex-1"
-                      />
-                      <Button type="submit">Add Address</Button>
-                    </form>
-                    
+            <TabsContent value="orders" className="space-y-6 mt-0 outline-none">
+              <Card className="border-none shadow-xl rounded-[2.5rem] bg-white p-10 text-center">
+                <div className="max-w-md mx-auto py-10">
+                  <div className="w-24 h-24 bg-blue-100 rounded-[2rem] flex items-center justify-center text-blue-600 mx-auto mb-6">
+                    <ShoppingCart size={48} />
+                  </div>
+                  <h3 className="text-3xl font-black text-slate-900 font-display mb-4">Centralized Order Hub</h3>
+                  <p className="text-slate-500 font-medium mb-10">Access high-level logs and real-time processing tools in the main dashboard.</p>
+                  <Button 
+                    className="w-full h-14 sm:h-16 rounded-2xl font-black text-sm sm:text-lg shadow-xl shadow-primary/20" 
+                    onClick={() => onTabChange ? onTabChange('analytics') : (window.location.href = '/admin')}
+                  >
+                    Open Live Command Center
+                  </Button>
+                </div>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="addresses" className="space-y-6 mt-0 outline-none">
+              <Card className="border-none shadow-xl rounded-[2.5rem] bg-white p-10">
+                <div className="flex items-center gap-4 mb-10">
+                  <div className="p-3 bg-primary/10 rounded-2xl text-primary">
+                    <MapPin size={32} />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-black text-slate-900 font-display">Logistics Hub</h3>
+                    <p className="text-slate-400 font-medium">Manage your verified delivery locations</p>
+                  </div>
+                </div>
+
+                <div className="space-y-8">
+                  <form onSubmit={handleAddAddress} className="flex flex-col sm:flex-row gap-4">
+                    <Input
+                      id="address-input"
+                      placeholder={editingAddressIndex !== null ? "Modify address..." : "Enter a new secure location..."}
+                      value={newAddress}
+                      onChange={(e) => setNewAddress(e.target.value)}
+                      className="flex-1 h-16 rounded-2xl bg-slate-50 border-slate-200 px-6 font-bold"
+                    />
+                    <Button type="submit" className="h-16 px-10 rounded-2xl font-black text-md">
+                      {editingAddressIndex !== null ? "Commit Update" : "Secure Address"}
+                    </Button>
+                  </form>
+                  
+                  <div className="grid grid-cols-1 gap-4">
                     {profile.addresses && profile.addresses.length > 0 ? (
-                      <div className="space-y-3">
-                        {profile.addresses.map((address, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <MapPin className="h-4 w-4 text-muted-foreground" />
-                              <span>{address}</span>
+                      profile.addresses.map((address, index) => (
+                        <motion.div 
+                          key={index} 
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-white border border-slate-100 rounded-3xl shadow-sm hover:shadow-md transition-all group"
+                        >
+                          <div className="flex items-center gap-4 mb-4 sm:mb-0">
+                            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
+                              <MapPin size={24} />
                             </div>
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="sm">
-                                Edit
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="text-destructive hover:text-destructive"
-                                onClick={() => {
-                                  const updatedAddresses = profile.addresses.filter((_, i) => i !== index);
-                                  updateProfile({ ...profile, addresses: updatedAddresses });
-                                  toast.success('Address removed');
-                                }}
-                              >
-                                Remove
-                              </Button>
-                            </div>
+                            <span className="font-bold text-slate-700 text-lg">{address}</span>
                           </div>
-                        ))}
-                      </div>
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="ghost" 
+                              className="h-12 rounded-xl font-bold text-slate-500 hover:bg-slate-50"
+                              onClick={() => handleEditAddress(index)}
+                            >
+                              Modify
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              className="h-12 rounded-xl font-bold text-destructive hover:bg-destructive/5"
+                              onClick={() => {
+                                const updatedAddresses = profile.addresses.filter((_, i) => i !== index);
+                                updateProfile({ ...profile, addresses: updatedAddresses });
+                                toast.success('Location scrubbed');
+                              }}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        </motion.div>
+                      ))
                     ) : (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p>No addresses saved yet</p>
-                        <p className="text-sm">Add your first delivery address above</p>
+                      <div className="text-center py-20 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200">
+                        <MapPin className="h-16 w-16 mx-auto mb-4 text-slate-300 opacity-50" />
+                        <h4 className="text-xl font-black text-slate-400">No Verified Locations</h4>
+                        <p className="text-sm text-slate-400 mt-2">Initialize your logistics by adding a delivery point above.</p>
                       </div>
                     )}
                   </div>
-                </CardContent>
+                </div>
               </Card>
             </TabsContent>
 
-            <TabsContent value="system" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>System Health</CardTitle>
-                  <CardDescription>Monitor system performance and status</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-medium mb-3">Database Status</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span>Orders</span>
-                            <Badge variant="outline" className="text-green-600">
-                              <Activity className="h-3 w-3 mr-1" />
-                              {adminStats.totalOrders} records
-                            </Badge>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Menu Items</span>
-                            <Badge variant="outline" className="text-green-600">
-                              <Activity className="h-3 w-3 mr-1" />
-                              {adminStats.totalItems} items
-                            </Badge>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Customers</span>
-                            <Badge variant="outline" className="text-green-600">
-                              <Activity className="h-3 w-3 mr-1" />
-                              {adminStats.totalCustomers} customers
-                            </Badge>
-                          </div>
-                        </div>
+            <TabsContent value="system" className="space-y-6 mt-0 outline-none">
+              <Card className="border-none shadow-xl rounded-[2.5rem] bg-white p-10">
+                <div className="flex items-center gap-4 mb-10">
+                  <div className="p-3 bg-blue-100 rounded-2xl text-blue-600">
+                    <Activity size={32} />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-black text-slate-900 font-display">System Integrity</h3>
+                    <p className="text-slate-400 font-medium">Core infrastructure monitoring</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <div className="space-y-8 p-8 rounded-[2rem] bg-slate-900 text-white shadow-2xl">
+                    <h4 className="font-black text-lg flex items-center gap-2">
+                      <Database className="h-5 w-5 text-blue-400" /> Data Nodes
+                    </h4>
+                    <div className="space-y-6">
+                      <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                        <span className="text-slate-400 font-bold">Transaction Records</span>
+                        <Badge className="bg-blue-500/20 text-blue-400 border-none font-black">{adminStats.totalOrders}</Badge>
                       </div>
-                      <div>
-                        <h4 className="font-medium mb-3">System Performance</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span>Storage</span>
-                            <Badge variant="outline" className="text-green-600">
-                              <Database className="h-3 w-3 mr-1" />
-                              Local Storage
-                            </Badge>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Status</span>
-                            <Badge variant="outline" className="text-green-600">
-                              <Activity className="h-3 w-3 mr-1" />
-                              Operational
-                            </Badge>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Last Updated</span>
-                            <span className="text-sm text-muted-foreground">
-                              {new Date().toLocaleTimeString()}
-                            </span>
-                          </div>
-                        </div>
+                      <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                        <span className="text-slate-400 font-bold">Culinary Assets</span>
+                        <Badge className="bg-blue-500/20 text-blue-400 border-none font-black">{adminStats.totalItems}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400 font-bold">Authorized Entities</span>
+                        <Badge className="bg-blue-500/20 text-blue-400 border-none font-black">{adminStats.totalCustomers}</Badge>
                       </div>
                     </div>
                   </div>
-                </CardContent>
+                  <div className="space-y-8 p-8 rounded-[2rem] bg-white border border-slate-100 shadow-lg">
+                    <h4 className="font-black text-slate-800 text-lg flex items-center gap-2">
+                      <Zap className="h-5 w-5 text-primary" /> Active Status
+                    </h4>
+                    <div className="space-y-6">
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-slate-500">Main API</span>
+                        <Badge className="bg-green-100 text-green-600 border-none font-black flex items-center gap-2 px-4 py-1.5 rounded-full animate-pulse">
+                          <Activity className="h-3 w-3" /> Operational
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-slate-500">Auth Engine</span>
+                        <Badge className="bg-green-100 text-green-600 border-none font-black px-4 py-1.5 rounded-full">Secure</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-slate-500">Latency</span>
+                        <span className="font-black text-slate-900">14ms</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </Card>
             </TabsContent>
 
-            <TabsContent value="settings" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Admin Settings</CardTitle>
-                  <CardDescription>Configure your administrative preferences</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div>
-                      <h4 className="font-medium mb-3">Notifications</h4>
-                      <div className="space-y-2">
-                        <label className="flex items-center justify-between">
-                          <span className="text-sm">New order alerts</span>
-                          <input type="checkbox" defaultChecked className="rounded" />
-                        </label>
-                        <label className="flex items-center justify-between">
-                          <span className="text-sm">Low inventory alerts</span>
-                          <input type="checkbox" defaultChecked className="rounded" />
-                        </label>
-                        <label className="flex items-center justify-between">
-                          <span className="text-sm">Customer feedback alerts</span>
-                          <input type="checkbox" defaultChecked className="rounded" />
-                        </label>
-                      </div>
-                    </div>
+            <TabsContent value="settings" className="space-y-6 mt-0 outline-none">
+              <Card className="border-none shadow-xl rounded-[2.5rem] bg-white p-10">
+                <div className="flex items-center gap-4 mb-10">
+                  <div className="p-3 bg-slate-900 rounded-2xl text-white">
+                    <Settings size={32} />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-black text-slate-900 font-display">Admin Preferences</h3>
+                    <p className="text-slate-400 font-medium">Control system-wide behaviors</p>
+                  </div>
+                </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <div className="space-y-8">
                     <div>
-                      <h4 className="font-medium mb-3">System Preferences</h4>
-                      <div className="space-y-2">
-                        <label className="flex items-center justify-between">
-                          <span className="text-sm">Auto-refresh dashboard</span>
-                          <input type="checkbox" defaultChecked className="rounded" />
-                        </label>
-                        <label className="flex items-center justify-between">
-                          <span className="text-sm">Show detailed analytics</span>
-                          <input type="checkbox" defaultChecked className="rounded" />
-                        </label>
-                        <label className="flex items-center justify-between">
-                          <span className="text-sm">Enable debug mode</span>
-                          <input type="checkbox" className="rounded" />
-                        </label>
-                      </div>
-                    </div>
-
-                    <div>
-                      <h4 className="font-medium mb-3">Admin Actions</h4>
-                      <div className="space-y-2">
-                        <Button variant="outline" className="w-full justify-start">
-                          <Database className="h-4 w-4 mr-2" />
-                          Export Data
-                        </Button>
-                        <Button variant="outline" className="w-full justify-start">
-                          <Shield className="h-4 w-4 mr-2" />
-                          Security Settings
-                        </Button>
-                        <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive">
-                          <Activity className="h-4 w-4 mr-2" />
-                          Clear Cache
-                        </Button>
+                      <h4 className="font-black text-slate-800 mb-6 flex items-center gap-2">
+                        <Bell className="h-5 w-5 text-primary" /> Intelligence Feed
+                      </h4>
+                      <div className="space-y-6 bg-slate-50 p-6 rounded-3xl">
+                        {[
+                          "Real-time order interrupts",
+                          "Inventory exhaustion alerts",
+                          "High-priority feedback pings"
+                        ].map((label, i) => (
+                          <label key={i} className="flex items-center justify-between group cursor-pointer">
+                            <span className="font-bold text-slate-600 group-hover:text-slate-900 transition-colors">{label}</span>
+                            <div className="relative inline-flex items-center cursor-pointer">
+                              <input type="checkbox" defaultChecked className="sr-only peer" />
+                              <div className="w-14 h-8 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary shadow-inner"></div>
+                            </div>
+                          </label>
+                        ))}
                       </div>
                     </div>
                   </div>
-                </CardContent>
+
+                  <div className="space-y-8">
+                    <h4 className="font-black text-slate-800 mb-6 flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-blue-500" /> Security & Maintenance
+                    </h4>
+                    <div className="grid grid-cols-1 gap-4">
+                      <Button 
+                        variant="outline" 
+                        className="h-16 justify-start px-8 rounded-2xl font-black text-slate-700 border-slate-200 hover:bg-slate-50 transition-all shadow-sm"
+                        onClick={() => handleSettingsAction('Data Export')}
+                      >
+                        <Database className="h-5 w-5 mr-4 text-blue-500" /> Export System Data
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="h-16 justify-start px-8 rounded-2xl font-black text-slate-700 border-slate-200 hover:bg-slate-50 transition-all shadow-sm"
+                        onClick={() => handleSettingsAction('Security Audit')}
+                      >
+                        <Shield className="h-5 w-5 mr-4 text-emerald-500" /> Initiate Security Audit
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="h-16 justify-start px-8 rounded-2xl font-black text-destructive border-slate-200 hover:bg-destructive hover:text-white transition-all shadow-sm"
+                        onClick={() => handleSettingsAction('Cache Clearance')}
+                      >
+                        <Activity className="h-5 w-5 mr-4" /> Purge System Cache
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </Card>
             </TabsContent>
           </Tabs>

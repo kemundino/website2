@@ -76,7 +76,7 @@ const AnalyticsDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
-                <h3 className="text-2xl font-bold mt-1">${stats.totalRevenue.toFixed(2)}</h3>
+                <h3 className="text-2xl font-bold mt-1">${(stats.totalRevenue || 0).toFixed(2)}</h3>
               </div>
               <div className="p-3 bg-orange-100 rounded-xl">
                 <DollarSign className="h-6 w-6 text-orange-600" />
@@ -112,7 +112,7 @@ const AnalyticsDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Avg. Order Value</p>
-                <h3 className="text-2xl font-bold mt-1">${stats.avgOrderValue.toFixed(2)}</h3>
+                <h3 className="text-2xl font-bold mt-1">${(stats.avgOrderValue || 0).toFixed(2)}</h3>
               </div>
               <div className="p-3 bg-green-100 rounded-xl">
                 <TrendingUp className="h-6 w-6 text-green-600" />

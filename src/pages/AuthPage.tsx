@@ -96,15 +96,19 @@ const AuthPage = () => {
     
     if (isForgotPasswordFlow) {
       if (!email.trim() || !validateEmail(email)) {
-        setFieldErrors({ email: "Please enter a valid email" });
+        setFieldErrors({ email: "Please enter a valid email address" });
         return;
       }
       setIsResetting(true);
       const success = await resetPassword(email);
       setIsResetting(false);
       if (success) {
-        toast.success("Password reset link sent to your email!");
+        toast.success("Password reset email sent", {
+          description: "If an account exists with this email, you will receive a reset link. Please check your spam folder.",
+          duration: 6000,
+        });
         setIsForgotPasswordFlow(false);
+        setPassword("");
       }
       return;
     }
@@ -177,8 +181,8 @@ const AuthPage = () => {
             >
               {isForgotPasswordFlow ? "Reset Password" : (isLogin ? "Welcome back" : "Create account")}
             </motion.h1>
-            <p className="text-sm text-muted-foreground">
-              {isForgotPasswordFlow ? "Enter your email to receive a reset link" : (isLogin ? "Sign in to your BiteBuzz account" : "Join BiteBuzz and start ordering")}
+            <p className="text-sm text-muted-foreground mt-2">
+              {isForgotPasswordFlow ? "Enter your email address and we'll send you a secure link to reset your password." : (isLogin ? "Sign in to your BiteBuzz account" : "Join BiteBuzz and start ordering")}
             </p>
           </div>
 

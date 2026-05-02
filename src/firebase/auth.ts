@@ -305,7 +305,23 @@ class AuthService {
       return { success: true };
     } catch (error: any) {
       console.error('Reset password error:', error);
-      return { success: false, error: error.message || 'Failed to send reset email' };
+      let errorMessage = 'Failed to send reset email. Please try again.';
+      
+      switch (error.code) {
+        case 'auth/invalid-email':
+          errorMessage = 'Please enter a valid email address.';
+          break;
+        case 'auth/user-not-found':
+          // For security (Email Enumeration Protection), we often pretend it succeeded
+          // But if the project doesn't have it enabled, this will trigger.
+          errorMessage = 'No account found with this email address.';
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = 'Too many requests. Please wait a moment and try again.';
+          break;
+      }
+      
+      return { success: false, error: errorMessage };
     }
   }
 

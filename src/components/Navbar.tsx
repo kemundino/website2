@@ -16,6 +16,10 @@ const Navbar = () => {
     ...(user?.role === "admin" ? [
       { to: "/admin", label: "Dashboard" },
       { to: "/admin/profile", label: "Profile" }
+    ] : user?.role === "staff" ? [
+      // Staff navigation
+      { to: "/staff", label: "My Portal" },
+      { to: "/profile", label: "Profile" }
     ] : [
       // Customer navigation
       { to: "/", label: "Menu" },

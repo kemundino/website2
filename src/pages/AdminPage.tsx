@@ -175,8 +175,8 @@ const AdminPage = () => {
                   key={item.id}
                   onClick={() => setTab(item.id)}
                   className={`w-full flex items-center gap-3 px-3 xl:px-4 py-3 rounded-2xl font-bold text-xs xl:text-sm transition-all duration-300 ${isActive
-                      ? "bg-slate-900 text-white shadow-2xl shadow-slate-300 scale-[1.02]"
-                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                    ? "bg-slate-900 text-white shadow-2xl shadow-slate-300 scale-[1.02]"
+                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                     }`}
                 >
                   <div className={`p-2 rounded-xl transition-colors ${isActive ? "bg-white/10" : item.bg}`}>
@@ -342,7 +342,7 @@ const AdminPage = () => {
                       >
                         <div className="flex items-center gap-3">
                           <UserIcon className="h-4 w-4 sm:h-5 sm:w-5 text-slate-400 group-hover:text-primary transition-colors" />
-                          <span className="text-xs sm:text-sm">Identity Profile</span>
+                          <span className="text-xs sm:text-sm">Profile</span>
                         </div>
                         <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                       </button>
@@ -406,7 +406,7 @@ const AdminPage = () => {
               {customItems.length === 0 && (
                 <div className="py-32 text-center bg-white rounded-[3rem] border-2 border-dashed border-slate-100">
                   <Utensils className="h-20 w-20 mx-auto mb-6 text-slate-200" />
-                  <h3 className="text-2xl font-black text-slate-400">No Custom Creations</h3>
+                  <h3 className="text-2xl font-black text-slate-400">No Custom Items</h3>
                   <p className="text-slate-400 font-medium mt-2">Craft your first bespoke culinary masterpiece.</p>
                   <Button onClick={() => setShowForm(true)} className="mt-8 h-14 px-8 rounded-2xl font-black bg-purple-600 hover:bg-purple-700 text-white border-none shadow-xl shadow-purple-200">Start Crafting</Button>
                 </div>

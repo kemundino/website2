@@ -767,7 +767,14 @@ const ScheduleManager = ({ staff, shifts }: { staff: StaffMember[], shifts: Shif
 
   const handleAddShift = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!newShift.staffId) {
+      toast.error('Please select a staff member first');
+      return;
+    }
+
     try {
+      console.log('Attempting to assign shift:', newShift);
       await addDoc(collection(db, 'shifts'), {
         ...newShift,
         status: 'scheduled',
@@ -775,8 +782,9 @@ const ScheduleManager = ({ staff, shifts }: { staff: StaffMember[], shifts: Shif
       });
       setIsAddShiftOpen(false);
       toast.success('Shift assigned successfully');
-    } catch (error) {
-      toast.error('Failed to assign shift');
+    } catch (error: any) {
+      console.error('Shift assignment error:', error);
+      toast.error(`Failed to assign shift: ${error.message || 'Unknown error'}`);
     }
   };
 

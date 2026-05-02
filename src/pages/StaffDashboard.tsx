@@ -134,27 +134,17 @@ const StaffDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-12">
-      {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 h-16 sm:h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 sm:h-12 sm:w-12 bg-primary/10 rounded-xl flex items-center justify-center">
-              <ChefHat className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-lg sm:text-xl font-black text-slate-900 leading-none">Staff Portal</h1>
-              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">Welcome back, {user?.name}</p>
-            </div>
+    <div className="min-h-screen bg-slate-50 pb-12 pt-8 sm:pt-12">
+      <div className="max-w-4xl mx-auto px-4 space-y-6 sm:space-y-8">
+        <div className="flex items-center gap-3 mb-2 px-2">
+          <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center">
+            <ChefHat className="h-6 w-6 text-primary" />
           </div>
-          <Button variant="ghost" size="sm" onClick={logout} className="text-slate-500 hover:text-destructive">
-            <LogOut className="h-5 w-5 sm:mr-2" />
-            <span className="hidden sm:inline">Logout</span>
-          </Button>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-none">Staff Portal</h1>
+            <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">Welcome back, {user?.name}</p>
+          </div>
         </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 mt-6 sm:mt-8 space-y-6 sm:space-y-8">
         {/* Status Card */}
         <Card className="border-none shadow-xl shadow-slate-200/60 overflow-hidden">
           <div className="h-2 bg-primary" />

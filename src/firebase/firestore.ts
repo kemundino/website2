@@ -252,8 +252,8 @@ export const StaffService = {
   update: (staffId: string, staffData: any) => FirestoreService.update('staff', staffId, staffData),
   delete: (staffId: string) => FirestoreService.delete('staff', staffId),
   getAll: () => FirestoreService.getAll('staff'),
-  getByRole: (role: string) => 
-    FirestoreService.query('staff', [where('role', '==', role), orderBy('lastName')]),
+  getByEmail: (email: string) => 
+    FirestoreService.query('staff', [where('email', '==', email)]),
   subscribe: (callback: (data: any[]) => void) => 
     FirestoreService.subscribe('staff', callback, [orderBy('lastName', 'asc'), orderBy('firstName', 'asc')])
 };

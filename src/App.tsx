@@ -17,6 +17,8 @@ import OrderTrackingPage from "./pages/OrderTrackingPage";
 import CustomerProfilePage from "./pages/CustomerProfilePage";
 import NotFound from "./pages/NotFound";
 import AdminRoute from "@/components/AdminRoute";
+import StaffRoute from "@/components/StaffRoute";
+import StaffDashboard from "./pages/StaffDashboard";
 import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContextFirebase";
 import { useLocation } from "react-router-dom";
@@ -29,9 +31,15 @@ const AdminRedirect = () => {
   const location = useLocation();
   
   useEffect(() => {
-    // Only redirect if admin is logged in but NOT already on admin pages
-    if (isAuthenticated && user?.role === "admin" && !location.pathname.startsWith('/admin')) {
-      window.location.href = "/admin";
+    if (isAuthenticated) {
+      // Redirect Admins
+      if (user?.role === "admin" && !location.pathname.startsWith('/admin')) {
+        window.location.href = "/admin";
+      }
+      // Redirect Staff
+      else if (user?.role === "staff" && !location.pathname.startsWith('/staff')) {
+        window.location.href = "/staff";
+      }
     }
   }, [isAuthenticated, user, location]);
 
@@ -60,6 +68,11 @@ const App = () => (
                   <AdminRoute>
                     <AdminPage />
                   </AdminRoute>
+                } />
+                <Route path="/staff" element={
+                  <StaffRoute>
+                    <StaffDashboard />
+                  </StaffRoute>
                 } />
                 <Route path="/admin/profile" element={
                   <AdminRoute>

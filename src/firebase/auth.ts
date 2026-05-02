@@ -22,7 +22,7 @@ export interface UserProfile {
   uid: string;
   email: string;
   displayName?: string;
-  role: 'admin' | 'customer';
+  role: 'admin' | 'customer' | 'staff';
   phoneNumber?: string;
   address?: string;
   avatar?: string;

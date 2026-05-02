@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { authService, UserProfile } from "@/firebase/auth";
-import { OrderService, FirestoreService } from "@/firebase/firestore";
+import { OrderService, FirestoreService, StaffService } from "@/firebase/firestore";
 import { toast } from "sonner";
 
 export interface User {
@@ -8,7 +8,7 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
-  role: "customer" | "admin";
+  role: "customer" | "admin" | "staff";
   createdAt?: string;
   lastLogin?: string;
   emailVerified?: boolean;
@@ -93,7 +93,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
           
           if (profileResult.success && profileResult.profile) {
-            const convertedUser = convertFirebaseUser(firebaseUser, profileResult.profile);
+            let convertedUser = convertFirebaseUser(firebaseUser, profileResult.profile);
+            
+            // If the user is a customer, check if they are actually staff
+            if (convertedUser.role === 'customer') {
+              try {
+                const staffResult = await StaffService.getByEmail(convertedUser.email);
+                if (staffResult.success && staffResult.data && staffResult.data.length > 0) {
+                  console.log('👷 Staff member detected! Upgrading role...');
+                  convertedUser.role = 'staff';
+                  // Sync role back to users collection for faster loading next time
+                  await authService.updateUserProfile(firebaseUser.uid, { role: 'staff' });
+                }
+              } catch (staffErr) {
+                console.warn('⚠️ Error checking staff status:', staffErr);
+              }
+            }
+
             setUser(convertedUser);
             setError(null);
             console.log('✅ User profile loaded successfully - Role:', convertedUser.role);

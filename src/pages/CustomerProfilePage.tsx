@@ -345,7 +345,7 @@ const CustomerProfilePage = () => {
                           </div>
                         </div>
                       ))}
-                      <Button variant="outline" className="w-full" onClick={() => window.location.href = '/orders'}>
+                      <Button variant="outline" className="w-full font-bold py-6 border-2 rounded-2xl hover:bg-primary/5 hover:text-primary transition-all" onClick={() => setActiveTab('orders')}>
                         View All Orders
                       </Button>
                     </div>
@@ -353,7 +353,7 @@ const CustomerProfilePage = () => {
                     <div className="text-center -py-8 text-muted-foreground">
                       <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
                       <p>No orders yet</p>
-                      <Button variant="outline" className="mt-4" onClick={() => window.location.href = '/'}>
+                      <Button variant="outline" className="mt-4 font-bold" onClick={() => window.location.href = '/'}>
                         Start Ordering
                       </Button>
                     </div>

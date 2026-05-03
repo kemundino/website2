@@ -117,8 +117,13 @@ const CustomerProfilePage = () => {
               </div>
               <div className="absolute bottom-0 right-0 p-1.5 bg-green-500 rounded-full border-2 border-white" />
             </div>
-            <h2 className="text-xl font-bold">{profile.name}</h2>
-            <p className="text-sm text-muted-foreground">{profile.email}</p>
+            <div className="flex flex-col items-center">
+              <h2 className="text-xl font-bold">{profile.name}</h2>
+              {user?.role === 'staff' && (
+                <Badge className="mt-2 bg-blue-600 text-white font-bold">STAFF MEMBER</Badge>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">{profile.email}</p>
             <div className="mt-4 pt-4 border-t flex items-center justify-around">
               <div className="text-center">
                 <p className="text-xl font-bold text-orange-600">{profile.loyaltyPoints}</p>

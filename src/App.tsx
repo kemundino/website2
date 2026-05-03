@@ -36,8 +36,14 @@ const AdminRedirect = () => {
       if (user?.role === "admin" && !location.pathname.startsWith('/admin')) {
         window.location.href = "/admin";
       }
-      // Redirect Staff
-      else if (user?.role === "staff" && !location.pathname.startsWith('/staff')) {
+      // Redirect Staff (Allow profile and tracking pages)
+      else if (
+        user?.role === "staff" && 
+        !location.pathname.startsWith('/staff') && 
+        !location.pathname.startsWith('/profile') &&
+        !location.pathname.startsWith('/track') &&
+        !location.pathname.startsWith('/orders')
+      ) {
         window.location.href = "/staff";
       }
     }

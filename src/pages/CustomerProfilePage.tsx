@@ -325,21 +325,23 @@ const CustomerProfilePage = () => {
                   {orders.length > 0 ? (
                     <div className="space-y-3">
                       {orders.slice(0, 3).map((order) => (
-                        <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <Package className="h-4 w-4 text-muted-foreground" />
+                        <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors border border-transparent hover:border-slate-200">
+                          <div className="flex items-center gap-4">
+                            <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center shadow-sm">
+                              <Package className="h-5 w-5 text-primary" />
+                            </div>
                             <div>
-                              <p className="font-medium">Order #{order.id}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {new Date(order.createdAt).toLocaleDateString()}
+                              <p className="font-bold text-slate-900 text-sm sm:text-base">Order #{order.id.slice(-6)}</p>
+                              <p className="text-xs font-medium text-slate-500">
+                                {new Date(order.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                               </p>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <Badge variant={order.status === 'delivered' ? 'default' : 'secondary'}>
+                          <div className="flex items-center justify-between sm:justify-end sm:text-right gap-4 pt-2 sm:pt-0 border-t sm:border-none border-slate-100">
+                            <Badge variant={order.status === 'delivered' ? 'default' : 'secondary'} className="font-bold uppercase tracking-wider text-[10px] px-3">
                               {order.status}
                             </Badge>
-                            <p className="text-sm font-medium mt-1">${order.total.toFixed(2)}</p>
+                            <p className="text-sm font-black text-slate-900">${order.total.toFixed(2)}</p>
                           </div>
                         </div>
                       ))}
@@ -370,25 +372,30 @@ const CustomerProfilePage = () => {
                   {orders.length > 0 ? (
                     <div className="space-y-4">
                       {orders.map((order) => (
-                        <div key={order.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                          <div className="flex items-start justify-between mb-3">
-                            <div>
-                              <h4 className="font-semibold">Order #{order.id}</h4>
-                              <p className="text-sm text-muted-foreground">
-                                {new Date(order.createdAt).toLocaleDateString('en-US', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </p>
+                        <div key={order.id} className="border-2 border-slate-100 rounded-2xl p-4 sm:p-6 hover:border-primary/20 hover:bg-slate-50/50 transition-all group">
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+                            <div className="flex items-center gap-4">
+                              <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                                <Package className="h-6 w-6" />
+                              </div>
+                              <div>
+                                <h4 className="text-lg font-black text-slate-900 tracking-tight">Order #{order.id}</h4>
+                                <p className="text-sm text-slate-500 font-medium">
+                                  {new Date(order.createdAt).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </p>
+                              </div>
                             </div>
-                            <div className="text-right">
-                              <Badge variant={order.status === 'delivered' ? 'default' : 'secondary'}>
-                                {order.status}
+                            <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2 bg-slate-100/50 sm:bg-transparent p-3 sm:p-0 rounded-xl">
+                              <Badge variant={order.status === 'delivered' ? 'default' : 'secondary'} className="font-black px-4 py-1 rounded-lg">
+                                {order.status.toUpperCase()}
                               </Badge>
-                              <p className="text-lg font-bold mt-1">${order.total.toFixed(2)}</p>
+                              <p className="text-2xl font-black text-slate-900">${order.total.toFixed(2)}</p>
                             </div>
                           </div>
                           
@@ -402,12 +409,12 @@ const CustomerProfilePage = () => {
                             ))}
                           </div>
                           
-                          <div className="flex items-center justify-between pt-3 border-t">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <MapPin className="h-4 w-4" />
-                              {order.deliveryAddress}
+                          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-5 border-t-2 border-slate-100">
+                            <div className="flex items-center gap-2 text-sm text-slate-500 font-bold bg-slate-50 px-4 py-2 rounded-xl w-full sm:w-auto">
+                              <MapPin className="h-4 w-4 text-primary" />
+                              <span className="truncate">{order.deliveryAddress}</span>
                             </div>
-                            <Button variant="outline" size="sm" onClick={() => window.location.href = `/track/${order.id}`}>
+                            <Button className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white font-black rounded-xl" onClick={() => window.location.href = `/track/${order.id}`}>
                               Track Order
                             </Button>
                           </div>

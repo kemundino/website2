@@ -137,15 +137,36 @@ const LiveOrders = () => {
                     </div>
                   </div>
 
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-6 border-t border-slate-50">
+                  <div className="mt-6 space-y-3">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ordered Items</p>
+                    <div className="bg-slate-50/50 rounded-2xl p-4 space-y-2">
+                      {order.items && order.items.length > 0 ? (
+                        order.items.map((item, idx) => (
+                          <div key={idx} className="flex justify-between items-center text-sm">
+                            <div className="flex items-center gap-3">
+                              <span className="w-6 h-6 rounded-lg bg-white flex items-center justify-center text-[10px] font-black text-slate-900 shadow-sm border border-slate-100">
+                                {item.quantity}x
+                              </span>
+                              <span className="font-bold text-slate-700">{item.name}</span>
+                            </div>
+                            <span className="font-black text-slate-900">${(item.price * item.quantity).toFixed(2)}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-xs text-slate-400 italic">No items listed</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-6 mt-6 border-t border-slate-50">
                     <div className="flex items-start gap-3 max-w-sm">
                       <Icons.MapPin className="h-5 w-5 text-slate-400 mt-0.5" />
                       <div>
-                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Logistics Route</p>
-                         <p className="text-sm font-bold text-slate-700">{order.deliveryAddress}</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Logistics Route</p>
+                        <p className="text-sm font-bold text-slate-700">{order.deliveryAddress}</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3">
                       <Select
                         value={order.status}

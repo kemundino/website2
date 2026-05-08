@@ -26,6 +26,7 @@ import StaffManagement from "@/components/StaffManagement";
 import ReservationSystem from "@/components/ReservationSystem";
 import RestaurantOperationsDashboard from "@/components/RestaurantOperationsDashboard";
 import AdminProfilePage from "@/pages/AdminProfilePage";
+import UserManagement from "@/components/UserManagement";
 
 const AdminPage = () => {
   const { user, logout } = useAuth();
@@ -56,6 +57,7 @@ const AdminPage = () => {
   const menuItems = [
     { id: "analytics", label: "Analytics", icon: BarChart3, color: "text-emerald-500", bg: "bg-emerald-50" },
     { id: "orders", label: "Orders", icon: ShoppingCart, color: "text-blue-500", bg: "bg-blue-50" },
+    { id: "users", label: "Users", icon: Users, color: "text-indigo-500", bg: "bg-indigo-50" },
     { id: "inventory", label: "Inventory", icon: Warehouse, color: "text-orange-500", bg: "bg-orange-50" },
     { id: "regular-items", label: "Regular Items", icon: Coffee, color: "text-purple-500", bg: "bg-purple-50" },
     { id: "custom-items", label: "Custom Items", icon: Utensils, color: "text-pink-500", bg: "bg-pink-50" },
@@ -373,7 +375,8 @@ const AdminPage = () => {
               </Card>
             </div>
           )}
-          {tab === "inventory" && <InventoryManagement />}
+          { tab === "inventory" && <InventoryManagement /> }
+          { tab === "users" && <UserManagement /> }
           {tab === "regular-items" && (
             <div className="space-y-8 sm:space-y-12">
               <h3 className="text-sm sm:text-lg font-black text-slate-400 uppercase tracking-[0.2em] mb-6 sm:mb-8 ml-2 sm:ml-4">Regular Menu Inventory</h3>

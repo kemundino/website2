@@ -13,6 +13,7 @@ import {
   Calendar, Phone, Mail, ChevronRight, History, ChevronDown
 } from 'lucide-react'
 import { toast } from 'sonner'
+import EmailVerificationPrompt from '@/components/EmailVerificationPrompt'
 
 const CustomerProfilePage = () => {
   const { user, logout, isAuthenticated } = useAuth()
@@ -76,6 +77,11 @@ const CustomerProfilePage = () => {
         <Button onClick={() => window.location.href = '/auth'}>Sign In</Button>
       </div>
     )
+  }
+
+  // If authenticated but email is not verified, show verification prompt
+  if (user && !user.emailVerified) {
+    return <EmailVerificationPrompt email={user.email} />
   }
 
   // If authenticated but profile hasn't loaded yet, show loading

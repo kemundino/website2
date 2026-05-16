@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContextFirebase";
+import EmailVerificationPrompt from "@/components/EmailVerificationPrompt";
 
 interface AdminRouteProps {
   children: React.ReactNode;
@@ -20,6 +21,11 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
   // Redirect to auth if not authenticated
   if (!isAuthenticated) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // If authenticated but email is not verified, show verification prompt
+  if (user && !user.emailVerified) {
+    return <EmailVerificationPrompt email={user.email} />
   }
 
   // Redirect to auth if not admin

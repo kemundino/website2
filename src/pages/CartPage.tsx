@@ -10,7 +10,7 @@ import CheckoutFlow from "@/components/CheckoutFlow";
 
 const CartPage = () => {
   const { items, updateQuantity, removeItem, totalPrice, isGuest } = useCart();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const [showCheckout, setShowCheckout] = useState(false);
   const [updatingItem, setUpdatingItem] = useState<string | null>(null);
@@ -23,6 +23,11 @@ const CartPage = () => {
       // Show a more user-friendly message and redirect to auth
       toast.info("Please sign in to complete your order");
       navigate("/auth");
+      return;
+    }
+    if (user && !user.emailVerified) {
+      toast.error("Please verify your email before placing an order");
+      navigate("/profile"); // Profile page shows the verification prompt
       return;
     }
     setShowCheckout(true);

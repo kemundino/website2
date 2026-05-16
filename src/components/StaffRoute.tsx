@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContextFirebase';
+import EmailVerificationPrompt from '@/components/EmailVerificationPrompt';
 
 interface StaffRouteProps {
   children: React.ReactNode;
@@ -21,6 +22,11 @@ const StaffRoute: React.FC<StaffRouteProps> = ({ children }) => {
   // Note: Admins are also allowed to see staff pages if needed, but usually we restrict strictly
   if (!isAuthenticated || (user?.role !== 'staff' && user?.role !== 'admin')) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // If authenticated but email is not verified, show verification prompt
+  if (user && !user.emailVerified) {
+    return <EmailVerificationPrompt email={user.email} />
   }
 
   return <>{children}</>;

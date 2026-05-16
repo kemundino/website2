@@ -280,8 +280,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (result.success) {
         console.log('✅ Registration successful');
-        const successMessage = role === 'admin' ? 'Admin account created successfully!' : 'Account created successfully!';
-        toast.success(successMessage);
+        const successMessage = role === 'admin' 
+          ? 'Admin account created! Please check your email for a verification link.' 
+          : 'Account created! Please check your email for a verification link.';
+        toast.success(successMessage, { duration: 6000 });
         
         // Update hasAdmin state if admin was created
         if (role === 'admin') {

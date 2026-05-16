@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import FeedbackModal from "@/components/FeedbackModal";
+import EmailVerificationPrompt from "@/components/EmailVerificationPrompt";
 
 interface Order {
   id: string;
@@ -87,6 +88,11 @@ const OrdersPage = () => {
         </Link>
       </div>
     );
+  }
+
+  // If authenticated but email is not verified, show verification prompt
+  if (user && !user.emailVerified) {
+    return <EmailVerificationPrompt email={user.email} />
   }
 
   return (

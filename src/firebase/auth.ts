@@ -14,7 +14,8 @@ import {
   browserLocalPersistence,
   browserSessionPersistence,
   sendPasswordResetEmail,
-  fetchSignInMethodsForEmail
+  fetchSignInMethodsForEmail,
+  sendEmailVerification
 } from 'firebase/auth';
 import { UserService } from './firestore';
 
@@ -104,6 +105,17 @@ class AuthService {
       }
       const userCredential: UserCredential = await createUserWithEmailAndPassword(auth, email, password);
       
+      // Send verification email
+      try {
+        const actionCodeSettings = {
+          url: window.location.origin + '/profile',
+          handleCodeInApp: false,
+        };
+        await sendEmailVerification(userCredential.user, actionCodeSettings);
+      } catch (verificationError) {
+        console.error('Failed to send verification email:', verificationError);
+      }
+
       // Create user profile in Firestore
       const userProfile: UserProfile = {
         uid: userCredential.user.uid,
@@ -139,6 +151,31 @@ class AuthService {
           break;
         default:
           errorMessage = error.message || 'Failed to create account';
+      }
+      
+      return { success: false, error: errorMessage };
+    }
+  }
+
+  // Resend verification email
+  async resendVerificationEmail(): Promise<{ success: boolean; error?: string }> {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        return { success: false, error: 'No user signed in' };
+      }
+      const actionCodeSettings = {
+        url: window.location.origin + '/profile',
+        handleCodeInApp: false,
+      };
+      await sendEmailVerification(currentUser, actionCodeSettings);
+      return { success: true };
+    } catch (error: any) {
+      console.error('Resend verification error:', error);
+      
+      let errorMessage = 'Failed to resend verification email';
+      if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many requests. Please wait a moment and try again.';
       }
       
       return { success: false, error: errorMessage };

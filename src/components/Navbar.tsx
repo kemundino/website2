@@ -127,23 +127,23 @@ const Navbar = () => {
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
 
-        <AnimatePresence>
-          {mobileOpen && typeof document !== 'undefined' && createPortal(
-            <motion.div
-              key="overlay"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
-              className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] md:hidden"
-              onClick={() => setMobileOpen(false)}
-            />,
-            document.body
-          )}
-          
-          {mobileOpen && typeof document !== 'undefined' && createPortal(
-            <motion.div
-              key="sidebar"
+        {typeof document !== 'undefined' && createPortal(
+          <AnimatePresence>
+            {mobileOpen && (
+              <motion.div
+                key="overlay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] md:hidden"
+                onClick={() => setMobileOpen(false)}
+              />
+            )}
+            
+            {mobileOpen && (
+              <motion.div
+                key="sidebar"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
@@ -224,10 +224,11 @@ const Navbar = () => {
                   </Link>
                 )}
               </div>
-            </motion.div>,
-            document.body
-          )}
-        </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
       </div>
     </nav>
   );

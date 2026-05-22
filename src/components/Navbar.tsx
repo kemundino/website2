@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { LogOut, ChefHat, Menu, X, LayoutDashboard, User as UserIcon, Briefcase, Package, Utensils, ShoppingCart, Phone } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContextFirebase";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
@@ -10,6 +10,31 @@ const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const root = document.getElementById("root");
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+      if (root) {
+        root.style.marginLeft = "60vw";
+        root.style.marginRight = "-60vw";
+        root.style.transition = "margin 0.4s cubic-bezier(0.4, 0, 0.2, 1)";
+      }
+    } else {
+      document.body.style.overflow = "";
+      if (root) {
+        root.style.marginLeft = "";
+        root.style.marginRight = "";
+      }
+    }
+    return () => {
+      document.body.style.overflow = "";
+      if (root) {
+        root.style.marginLeft = "";
+        root.style.marginRight = "";
+      }
+    };
+  }, [mobileOpen]);
 
   const navLinks = [
     // Admin navigation
@@ -112,8 +137,8 @@ const Navbar = () => {
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
-              transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-              className="fixed inset-y-0 left-0 z-50 flex w-[320px] max-w-[85vw] flex-col bg-[#171717] text-zinc-100 md:hidden shadow-2xl"
+              transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+              className="fixed inset-y-0 left-0 z-50 flex w-[60vw] flex-col bg-[#171717] text-zinc-100 md:hidden shadow-2xl"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-4">

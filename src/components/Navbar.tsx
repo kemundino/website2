@@ -1,7 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
-import { LogOut, ChefHat, Menu, X, LayoutDashboard, User as UserIcon, Briefcase, Package, Utensils, ShoppingCart, Phone } from "lucide-react";
+import { LogOut, ChefHat, Menu, X, LayoutDashboard, User as UserIcon, Briefcase, Package, Utensils, ShoppingCart, Phone, Sun, Moon, Monitor } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContextFirebase";
+import { useTheme } from "@/context/ThemeContext";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,8 +10,16 @@ import { motion, AnimatePresence } from "framer-motion";
 const Navbar = () => {
   const { totalItems } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const cycleTheme = () => {
+    const next = theme === "light" ? "dark" : theme === "dark" ? "system" : "light";
+    setTheme(next);
+  };
+
+  const ThemeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
 
   useEffect(() => {
     const root = document.getElementById("root");
@@ -105,6 +114,14 @@ const Navbar = () => {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
+          {/* Theme Toggle */}
+          <button
+            onClick={cycleTheme}
+            title={`Theme: ${theme}`}
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <ThemeIcon className="h-4 w-4" />
+          </button>
           {isAuthenticated ? (
             <>
               <span className="text-sm text-muted-foreground">Hi, {user?.name}</span>
@@ -120,12 +137,21 @@ const Navbar = () => {
         </div>
 
         {/* Mobile toggle */}
-        <button
-          className="flex items-center justify-center rounded-lg p-2 md:hidden"
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        <div className="flex items-center gap-1 md:hidden">
+          <button
+            onClick={cycleTheme}
+            title={`Theme: ${theme}`}
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <ThemeIcon className="h-4 w-4" />
+          </button>
+          <button
+            className="flex items-center justify-center rounded-lg p-2"
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
+            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
 
         {typeof document !== 'undefined' && createPortal(
           <AnimatePresence>

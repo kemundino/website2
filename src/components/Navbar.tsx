@@ -96,24 +96,25 @@ const Navbar = () => {
 
         <AnimatePresence>
           {mobileOpen && (
-            <>
-              {/* Overlay */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] md:hidden"
-                onClick={() => setMobileOpen(false)}
-              />
-              
-              {/* Dark Glass Sidebar */}
-              <motion.div
-                initial={{ x: "-100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "-100%" }}
-                transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-                className="fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-white/10 bg-slate-950/70 backdrop-blur-2xl text-slate-100 md:hidden shadow-2xl"
-              >
+            <motion.div
+              key="overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] md:hidden"
+              onClick={() => setMobileOpen(false)}
+            />
+          )}
+          
+          {mobileOpen && (
+            <motion.div
+              key="sidebar"
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+              className="fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-white/10 bg-slate-950/70 backdrop-blur-2xl text-slate-100 md:hidden shadow-2xl"
+            >
                 {/* Header & User Profile */}
                 <div className="p-6 pb-4 border-b border-white/5">
                   <div className="flex items-center justify-between mb-8">
@@ -197,7 +198,6 @@ const Navbar = () => {
                   )}
                 </div>
               </motion.div>
-            </>
           )}
         </AnimatePresence>
       </div>

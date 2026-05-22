@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LogOut, ChefHat, Menu, X } from "lucide-react";
+import { LogOut, ChefHat, Menu, X, LayoutDashboard, User as UserIcon, Briefcase, Package, Utensils, ShoppingCart, Phone } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContextFirebase";
 import { useState } from "react";
@@ -14,21 +14,21 @@ const Navbar = () => {
   const navLinks = [
     // Admin navigation
     ...(user?.role === "admin" ? [
-      { to: "/admin", label: "Dashboard" },
-      { to: "/admin/profile", label: "Profile" }
+      { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
+      { to: "/admin/profile", label: "Profile", icon: UserIcon }
     ] : user?.role === "staff" ? [
       // Staff navigation
-      { to: "/staff", label: "My Portal" },
-      { to: "/orders", label: "My Orders" },
-      { to: "/profile", label: "Profile" }
+      { to: "/staff", label: "My Portal", icon: Briefcase },
+      { to: "/orders", label: "My Orders", icon: Package },
+      { to: "/profile", label: "Profile", icon: UserIcon }
     ] : [
       // Customer navigation
-      { to: "/", label: "Menu" },
-      { to: "/cart", label: "Cart" },
-      { to: "/contact", label: "Contact" },
+      { to: "/", label: "Menu", icon: Utensils },
+      { to: "/cart", label: "Cart", icon: ShoppingCart },
+      { to: "/contact", label: "Contact", icon: Phone },
       ...(isAuthenticated ? [
-        { to: "/orders", label: "Orders" },
-        { to: "/profile", label: "Profile" }
+        { to: "/orders", label: "Orders", icon: Package },
+        { to: "/profile", label: "Profile", icon: UserIcon }
       ] : [])
     ])
   ];
@@ -102,84 +102,94 @@ const Navbar = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
+                className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] md:hidden"
                 onClick={() => setMobileOpen(false)}
               />
               
-              {/* Left Sidebar */}
+              {/* Dark Glass Sidebar */}
               <motion.div
                 initial={{ x: "-100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
-                transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-                className="fixed inset-y-0 left-0 z-50 flex w-[80%] max-w-sm flex-col border-r border-border bg-card shadow-xl md:hidden"
+                transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                className="fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-white/10 bg-slate-950/70 backdrop-blur-2xl text-slate-100 md:hidden shadow-2xl"
               >
-                <div className="flex items-center justify-between border-b border-border p-4">
-                  <Link to="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-warm">
-                      <ChefHat className="h-5 w-5 text-primary-foreground" />
-                    </div>
-                    <span className="font-display text-xl font-bold text-foreground">BiteBuzz</span>
-                  </Link>
-                  <button
-                    className="flex items-center justify-center rounded-lg p-2 hover:bg-muted text-muted-foreground transition-colors"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    <X className="h-6 w-6" />
-                  </button>
-                </div>
-                
-                <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.to}
-                      to={link.to}
-                      className={`relative flex items-center justify-between rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
-                        isActive(link.to)
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                      }`}
+                {/* Header & User Profile */}
+                <div className="p-6 pb-4 border-b border-white/5">
+                  <div className="flex items-center justify-between mb-8">
+                    <h2 className="font-display text-2xl font-bold tracking-wide text-white">BiteBuzz</h2>
+                    <button
+                      className="rounded-full p-2 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
                       onClick={() => setMobileOpen(false)}
                     >
-                      <span>{link.label}</span>
-                      {link.label === "Cart" && totalItems > 0 && (
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold">
-                          {totalItems}
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+                  
+                  {isAuthenticated && (
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-800 shadow-inner">
+                        <span className="text-sm font-bold text-white">
+                          {user?.name?.charAt(0).toUpperCase()}
                         </span>
-                      )}
-                    </Link>
-                  ))}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-white">{user?.name}</span>
+                        <span className="text-xs text-slate-400">My Account</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Menu Title */}
+                <div className="px-6 py-4 text-xs font-semibold tracking-wider text-slate-400">
+                  MENU
                 </div>
 
-                {/* Mobile user section */}
-                <div className="border-t border-border p-4">
-                  {isAuthenticated ? (
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3 px-2">
-                        <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center">
-                          <span className="text-sm font-bold">
-                            {user?.name?.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-foreground">{user?.name}</span>
-                          <span className="text-xs text-muted-foreground">{user?.email}</span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => {
-                          logout();
-                          setMobileOpen(false);
-                        }}
-                        className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                {/* Navigation Links */}
+                <div className="flex-1 overflow-y-auto px-2 flex flex-col gap-1">
+                  {navLinks.map((link) => {
+                    const Icon = link.icon;
+                    return (
+                      <Link
+                        key={link.to}
+                        to={link.to}
+                        className={`group relative flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
+                          isActive(link.to)
+                            ? "bg-white/10 text-white"
+                            : "text-slate-300 hover:bg-white/5 hover:text-white"
+                        }`}
+                        onClick={() => setMobileOpen(false)}
                       >
-                        <LogOut className="h-4 w-4" /> Logout
-                      </button>
-                    </div>
+                        <Icon className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+                        <span>{link.label}</span>
+                        {link.label === "Cart" && totalItems > 0 && (
+                          <span className="absolute right-4 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white shadow-lg">
+                            {totalItems}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                {/* Bottom Section */}
+                <div className="mt-auto border-t border-white/5 p-4">
+                  {isAuthenticated ? (
+                    <button
+                      onClick={() => {
+                        logout();
+                        setMobileOpen(false);
+                      }}
+                      className="group flex w-full items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white transition-colors"
+                    >
+                      <LogOut className="h-5 w-5 opacity-80 group-hover:opacity-100" />
+                      <span>Log Out</span>
+                    </button>
                   ) : (
                     <Link
                       to="/auth"
-                      className="flex w-full items-center justify-center rounded-lg gradient-warm px-4 py-3 text-sm font-semibold text-primary-foreground transition-transform hover:scale-[1.02]"
+                      className="flex w-full items-center justify-center rounded-xl bg-blue-600/90 px-4 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-transform hover:scale-[1.02] hover:bg-blue-600"
                       onClick={() => setMobileOpen(false)}
                     >
                       Sign In

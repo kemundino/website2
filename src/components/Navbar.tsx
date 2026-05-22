@@ -3,6 +3,7 @@ import { LogOut, ChefHat, Menu, X, LayoutDashboard, User as UserIcon, Briefcase,
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContextFirebase";
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
@@ -15,23 +16,30 @@ const Navbar = () => {
     const root = document.getElementById("root");
     if (mobileOpen) {
       document.body.style.overflow = "hidden";
+      document.body.style.backgroundColor = "#000"; // Prevent white flash behind root
       if (root) {
-        root.style.marginLeft = "60vw";
-        root.style.marginRight = "-60vw";
-        root.style.transition = "margin 0.4s cubic-bezier(0.4, 0, 0.2, 1)";
+        root.style.transform = "translateX(60vw)";
+        root.style.transition = "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)";
       }
     } else {
       document.body.style.overflow = "";
+      document.body.style.backgroundColor = "";
       if (root) {
-        root.style.marginLeft = "";
-        root.style.marginRight = "";
+        root.style.transform = "translateX(0)";
+        setTimeout(() => {
+          if (!document.getElementById("root")?.style.transform.includes("60vw")) {
+            root.style.transform = "";
+            root.style.transition = "";
+          }
+        }, 400);
       }
     }
     return () => {
       document.body.style.overflow = "";
+      document.body.style.backgroundColor = "";
       if (root) {
-        root.style.marginLeft = "";
-        root.style.marginRight = "";
+        root.style.transform = "";
+        root.style.transition = "";
       }
     };
   }, [mobileOpen]);
@@ -120,25 +128,27 @@ const Navbar = () => {
         </button>
 
         <AnimatePresence>
-          {mobileOpen && (
+          {mobileOpen && typeof document !== 'undefined' && createPortal(
             <motion.div
               key="overlay"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] md:hidden"
+              transition={{ duration: 0.4 }}
+              className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] md:hidden"
               onClick={() => setMobileOpen(false)}
-            />
+            />,
+            document.body
           )}
           
-          {mobileOpen && (
+          {mobileOpen && typeof document !== 'undefined' && createPortal(
             <motion.div
               key="sidebar"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
-              transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-              className="fixed inset-y-0 left-0 z-50 flex w-[60vw] flex-col bg-[#171717] text-zinc-100 md:hidden shadow-2xl"
+              transition={{ type: "tween", ease: [0.4, 0, 0.2, 1], duration: 0.4 }}
+              className="fixed inset-y-0 left-0 z-[110] flex w-[60vw] flex-col bg-[#171717] text-zinc-100 md:hidden shadow-2xl"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-4">
@@ -214,7 +224,8 @@ const Navbar = () => {
                   </Link>
                 )}
               </div>
-            </motion.div>
+            </motion.div>,
+            document.body
           )}
         </AnimatePresence>
       </div>

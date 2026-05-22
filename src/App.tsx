@@ -19,6 +19,8 @@ import NotFound from "./pages/NotFound";
 import AdminRoute from "@/components/AdminRoute";
 import StaffRoute from "@/components/StaffRoute";
 import StaffDashboard from "./pages/StaffDashboard";
+import ContactPage from "./pages/ContactPage";
+import Footer from "@/components/Footer";
 import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContextFirebase";
 import { useLocation } from "react-router-dom";
@@ -88,8 +90,10 @@ const App = () => (
                 <Route path="/admin-profile" element={<Navigate to="/admin/profile" replace />} />
                 <Route path="/track" element={<OrderTrackingPage />} />
                 <Route path="/track/:orderId" element={<OrderTrackingPage />} />
+                <Route path="/contact" element={<ContactPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <Footer />
             </BrowserRouter>
           </UnifiedItemsProvider>
         </CartProvider>

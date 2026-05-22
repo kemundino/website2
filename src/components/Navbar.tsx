@@ -112,92 +112,84 @@ const Navbar = () => {
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
-              transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-              className="fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-white/10 bg-slate-950/70 backdrop-blur-2xl text-slate-100 md:hidden shadow-2xl"
+              transition={{ type: "spring", bounce: 0, duration: 0.3 }}
+              className="fixed inset-y-0 left-0 z-50 flex w-[320px] max-w-[85vw] flex-col bg-[#171717] text-zinc-100 md:hidden shadow-2xl"
             >
-                {/* Header & User Profile */}
-                <div className="p-6 pb-4 border-b border-white/5">
-                  <div className="flex items-center justify-between mb-8">
-                    <h2 className="font-display text-2xl font-bold tracking-wide text-white">BiteBuzz</h2>
-                    <button
-                      className="rounded-full p-2 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+              {/* Header */}
+              <div className="flex items-center justify-between p-4">
+                <Link to="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
+                  <ChefHat className="h-6 w-6 text-white" />
+                  <span className="font-display text-lg font-medium text-white">BiteBuzz</span>
+                </Link>
+                <button
+                  className="rounded-md p-2 text-zinc-400 hover:text-white transition-colors"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              {/* Navigation Links */}
+              <div className="flex-1 overflow-y-auto px-3 py-2 flex flex-col gap-1">
+                {navLinks.map((link) => {
+                  const Icon = link.icon;
+                  return (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      className={`group relative flex items-center gap-3 rounded-lg px-3 py-3 text-sm transition-colors ${
+                        isActive(link.to)
+                          ? "bg-[#212121] text-white"
+                          : "text-zinc-300 hover:bg-[#212121] hover:text-white"
+                      }`}
                       onClick={() => setMobileOpen(false)}
                     >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
-                  
-                  {isAuthenticated && (
+                      <Icon className="h-5 w-5 opacity-90" />
+                      <span className="font-medium">{link.label}</span>
+                      {link.label === "Cart" && totalItems > 0 && (
+                        <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white">
+                          {totalItems}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* Bottom User Section (ChatGPT style) */}
+              <div className="p-3 border-t border-white/10">
+                {isAuthenticated ? (
+                  <button
+                    onClick={() => {
+                      logout();
+                      setMobileOpen(false);
+                    }}
+                    className="flex w-full items-center justify-between gap-3 rounded-lg p-3 text-sm font-medium text-zinc-300 hover:bg-[#212121] hover:text-white transition-colors"
+                  >
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-800 shadow-inner">
-                        <span className="text-sm font-bold text-white">
+                      <div className="flex h-8 w-8 items-center justify-center rounded bg-gradient-to-tr from-blue-500 to-blue-400 text-white">
+                        <span className="text-sm font-bold">
                           {user?.name?.charAt(0).toUpperCase()}
                         </span>
                       </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-white">{user?.name}</span>
-                        <span className="text-xs text-slate-400">My Account</span>
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm font-medium text-white">{user?.name}</span>
+                        <span className="text-[11px] text-zinc-400">Log out</span>
                       </div>
                     </div>
-                  )}
-                </div>
-                
-                {/* Menu Title */}
-                <div className="px-6 py-4 text-xs font-semibold tracking-wider text-slate-400">
-                  MENU
-                </div>
-
-                {/* Navigation Links */}
-                <div className="flex-1 overflow-y-auto px-2 flex flex-col gap-1">
-                  {navLinks.map((link) => {
-                    const Icon = link.icon;
-                    return (
-                      <Link
-                        key={link.to}
-                        to={link.to}
-                        className={`group relative flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
-                          isActive(link.to)
-                            ? "bg-white/10 text-white"
-                            : "text-slate-300 hover:bg-white/5 hover:text-white"
-                        }`}
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        <Icon className="h-5 w-5 opacity-80 group-hover:opacity-100" />
-                        <span>{link.label}</span>
-                        {link.label === "Cart" && totalItems > 0 && (
-                          <span className="absolute right-4 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white shadow-lg">
-                            {totalItems}
-                          </span>
-                        )}
-                      </Link>
-                    );
-                  })}
-                </div>
-
-                {/* Bottom Section */}
-                <div className="mt-auto border-t border-white/5 p-4">
-                  {isAuthenticated ? (
-                    <button
-                      onClick={() => {
-                        logout();
-                        setMobileOpen(false);
-                      }}
-                      className="group flex w-full items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white transition-colors"
-                    >
-                      <LogOut className="h-5 w-5 opacity-80 group-hover:opacity-100" />
-                      <span>Log Out</span>
-                    </button>
-                  ) : (
-                    <Link
-                      to="/auth"
-                      className="flex w-full items-center justify-center rounded-xl bg-blue-600/90 px-4 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-transform hover:scale-[1.02] hover:bg-blue-600"
-                      onClick={() => setMobileOpen(false)}
-                    >
-                      Sign In
-                    </Link>
-                  )}
-                </div>
-              </motion.div>
+                    <LogOut className="h-4 w-4 text-zinc-400 group-hover:text-white" />
+                  </button>
+                ) : (
+                  <Link
+                    to="/auth"
+                    className="flex w-full items-center justify-center rounded-lg bg-white px-4 py-3 text-sm font-semibold text-black transition-transform hover:scale-[1.02]"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Log in / Sign up
+                  </Link>
+                )}
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>

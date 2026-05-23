@@ -1,25 +1,15 @@
 import { Link, useLocation } from "react-router-dom";
-import { LogOut, ChefHat, Menu, X, LayoutDashboard, User as UserIcon, Briefcase, Package, Utensils, ShoppingCart, Phone, Sun, Moon, Monitor } from "lucide-react";
+import { LogOut, ChefHat, Menu, X, LayoutDashboard, User as UserIcon, Briefcase, Package, Utensils, ShoppingCart, Phone } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContextFirebase";
-import { useTheme } from "@/context/ThemeContext";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
   const { totalItems } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  const cycleTheme = () => {
-    const next = theme === "light" ? "dark" : theme === "dark" ? "system" : "light";
-    setTheme(next);
-  };
-
-  const ThemeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
 
   useEffect(() => {
     const root = document.getElementById("root");
@@ -114,14 +104,6 @@ const Navbar = () => {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
-          {/* Theme Toggle */}
-          <button
-            onClick={cycleTheme}
-            title={`Theme: ${theme}`}
-            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <ThemeIcon className="h-4 w-4" />
-          </button>
           {isAuthenticated ? (
             <>
               <span className="text-sm text-muted-foreground">Hi, {user?.name}</span>
@@ -139,13 +121,6 @@ const Navbar = () => {
         {/* Mobile toggle */}
         <div className="flex items-center gap-1 md:hidden">
           <button
-            onClick={cycleTheme}
-            title={`Theme: ${theme}`}
-            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <ThemeIcon className="h-4 w-4" />
-          </button>
-          <button
             className="flex items-center justify-center rounded-lg p-2"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
@@ -154,27 +129,20 @@ const Navbar = () => {
         </div>
 
         {typeof document !== 'undefined' && createPortal(
-          <AnimatePresence>
-            {mobileOpen && (
-              <motion.div
-                key="overlay"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-                className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] md:hidden"
-                onClick={() => setMobileOpen(false)}
-              />
-            )}
+          <>
+            {/* Overlay */}
+            <div
+              className={`fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] md:hidden transition-opacity duration-[400ms] ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+              onClick={() => setMobileOpen(false)}
+            />
             
-            {mobileOpen && (
-              <motion.div
-                key="sidebar"
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "tween", ease: [0.4, 0, 0.2, 1], duration: 0.4 }}
+            {/* Sidebar */}
+            <aside
               className="fixed inset-y-0 left-0 z-[110] flex w-[60vw] flex-col bg-card text-foreground md:hidden shadow-2xl border-r border-border"
+              style={{
+                transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)'
+              }}
             >
               {/* Header */}
               <div className="flex items-center justify-between p-4">
@@ -250,9 +218,8 @@ const Navbar = () => {
                   </Link>
                 )}
               </div>
-              </motion.div>
-            )}
-          </AnimatePresence>,
+            </aside>
+          </>,
           document.body
         )}
       </div>

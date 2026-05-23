@@ -13,7 +13,7 @@ import {
   Users, ChefHat, UserPlus, Calendar, Activity, ChevronDown,
   Sparkles, LogOut, Menu as MenuIcon, X, Star, Clock, User as UserIcon,
   ShieldCheck, ExternalLink, Image as ImageIcon, Upload, Camera, Globe,
-  Coffee, Sun, Moon, Monitor
+  Coffee
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -28,7 +28,6 @@ import ReservationSystem from "@/components/ReservationSystem";
 import RestaurantOperationsDashboard from "@/components/RestaurantOperationsDashboard";
 import AdminProfilePage from "@/pages/AdminProfilePage";
 import UserManagement from "@/components/UserManagement";
-import { useTheme } from "@/context/ThemeContext";
 
 const AdminPage = () => {
   const { user, logout } = useAuth();
@@ -40,13 +39,6 @@ const AdminPage = () => {
   const [editItem, setEditItem] = useState<UnifiedItem | null>(null);
   const [showForm, setShowForm] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
-  const { theme, setTheme } = useTheme();
-
-  const cycleTheme = () => {
-    const next = theme === "light" ? "dark" : theme === "dark" ? "system" : "light";
-    setTheme(next);
-  };
-  const ThemeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -250,68 +242,55 @@ const AdminPage = () => {
 
       {/* Mobile Sidebar Overlay */}
       {typeof document !== 'undefined' && createPortal(
-        <AnimatePresence>
-          {isSidebarOpen && (
-            <>
-              <motion.div
-                key="overlay"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-                onClick={() => setIsSidebarOpen(false)}
-                className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] lg:hidden"
-              />
-              <motion.aside
-                key="sidebar"
-                initial={{ x: "-100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "-100%" }}
-                transition={{ type: "tween", ease: [0.4, 0, 0.2, 1], duration: 0.4 }}
-                className="fixed inset-y-0 left-0 z-[110] flex w-[60vw] flex-col bg-white dark:bg-card text-slate-900 dark:text-foreground lg:hidden shadow-2xl border-r border-slate-200 dark:border-border p-4 sm:p-6"
-              >
-                <div className="flex items-center justify-between mb-10">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-slate-900 dark:bg-foreground rounded-xl">
-                      <Utensils className="h-6 w-6 text-white dark:text-background" />
-                    </div>
-                    <span className="font-display font-black text-2xl text-slate-900 dark:text-foreground tracking-tight">AdminPro</span>
-                  </div>
-                  <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => setIsSidebarOpen(false)}>
-                    <X className="h-6 w-6" />
-                  </Button>
+        <>
+          <div
+            className={`fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] lg:hidden transition-opacity duration-[400ms] ${isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+            onClick={() => setIsSidebarOpen(false)}
+          />
+          <aside
+            className="fixed inset-y-0 left-0 z-[110] flex w-[60vw] flex-col bg-white dark:bg-card text-slate-900 dark:text-foreground lg:hidden shadow-2xl border-r border-slate-200 dark:border-border p-4 sm:p-6"
+            style={{
+              transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              transform: isSidebarOpen ? 'translateX(0)' : 'translateX(-100%)'
+            }}
+          >
+            <div className="flex items-center justify-between mb-10">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-slate-900 dark:bg-foreground rounded-xl">
+                  <Utensils className="h-6 w-6 text-white dark:text-background" />
                 </div>
+                <span className="font-display font-black text-2xl text-slate-900 dark:text-foreground tracking-tight">AdminPro</span>
+              </div>
+              <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => setIsSidebarOpen(false)}>
+                <X className="h-6 w-6" />
+              </Button>
+            </div>
 
-                <nav className="space-y-1 overflow-y-auto flex-1 pr-2 custom-scrollbar">
-                  {menuItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = tab === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => { setTab(item.id); setIsSidebarOpen(false); }}
-                        className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-black transition-all ${isActive ? "bg-slate-900 dark:bg-foreground text-white dark:text-background shadow-xl shadow-slate-200" : "text-slate-500 dark:text-muted-foreground hover:bg-slate-50 dark:bg-background"
-                          }`}
-                      >
-                        <Icon className="h-5 w-5" />
-                        {item.label}
-                      </button>
-                    );
-                  })}
-                </nav>
+            <nav className="space-y-1 overflow-y-auto flex-1 pr-2 custom-scrollbar">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = tab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => { setTab(item.id); setIsSidebarOpen(false); }}
+                    className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-black transition-all ${isActive ? "bg-slate-900 dark:bg-foreground text-white dark:text-background shadow-xl shadow-slate-200" : "text-slate-500 dark:text-muted-foreground hover:bg-slate-50 dark:bg-background"
+                      }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {item.label}
+                  </button>
+                );
+              })}
+            </nav>
 
-                <div className="mt-8 pt-8 border-t border-slate-100 dark:border-border/50">
-                  <Button variant="ghost" className="w-full h-14 justify-start rounded-2xl font-black mb-2" onClick={() => { setTab('profile'); setIsSidebarOpen(false); }}>
-                    <UserIcon className="h-5 w-5 mr-3" /> My Profile
-                  </Button>
-                  <Button variant="outline" className="w-full h-14 justify-start rounded-2xl font-black text-destructive border-slate-200 dark:border-border" onClick={logout}>
-                    <LogOut className="h-5 w-5 mr-3" /> Sign Out
-                  </Button>
-                </div>
-              </motion.aside>
-            </>
-          )}
-        </AnimatePresence>,
+            <div className="mt-8 pt-8 border-t border-slate-100 dark:border-border/50">
+              <Button variant="outline" className="w-full h-14 justify-start rounded-2xl font-black text-destructive border-slate-200 dark:border-border" onClick={logout}>
+                <LogOut className="h-5 w-5 mr-3" /> Sign Out
+              </Button>
+            </div>
+          </aside>
+        </>,
         document.body
       )}
 
@@ -344,14 +323,6 @@ const AdminPage = () => {
 
           {/* Right Section */}
           <div className="flex-1 flex items-center justify-end gap-2 sm:gap-[4%]">
-            <button
-              onClick={cycleTheme}
-              title={`Theme: ${theme}`}
-              className="rounded-xl p-2 text-slate-500 dark:text-muted-foreground hover:bg-slate-100 dark:bg-muted transition-colors"
-            >
-              <ThemeIcon className="h-5 w-5" />
-            </button>
-
             {(tab === "regular-items" || tab === "custom-items") && (
               <Button
                 onClick={() => { setEditItem(null); setShowForm(true); }}

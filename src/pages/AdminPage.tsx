@@ -50,6 +50,38 @@ const AdminPage = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const root = document.getElementById("root");
+    if (isSidebarOpen) {
+      document.body.style.overflow = "hidden";
+      document.body.style.backgroundColor = "#000"; // Prevent white flash behind root
+      if (root) {
+        root.style.transform = "translateX(60vw)";
+        root.style.transition = "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)";
+      }
+    } else {
+      document.body.style.overflow = "";
+      document.body.style.backgroundColor = "";
+      if (root) {
+        root.style.transform = "translateX(0)";
+        setTimeout(() => {
+          if (!document.getElementById("root")?.style.transform.includes("60vw")) {
+            root.style.transform = "";
+            root.style.transition = "";
+          }
+        }, 400);
+      }
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.backgroundColor = "";
+      if (root) {
+        root.style.transform = "";
+        root.style.transition = "";
+      }
+    };
+  }, [isSidebarOpen]);
+
   if (!user || user.role !== "admin") {
     return <Navigate to="/auth" replace />;
   }
@@ -212,18 +244,21 @@ const AdminPage = () => {
         {isSidebarOpen && (
           <>
             <motion.div
+              key="overlay"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
               onClick={() => setIsSidebarOpen(false)}
-              className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100]"
+              className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] lg:hidden"
             />
             <motion.aside
+              key="sidebar"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed top-0 left-0 h-full w-[280px] sm:w-[320px] bg-white/95 backdrop-blur-2xl z-[110] p-6 sm:p-8 shadow-2xl flex flex-col"
+              transition={{ type: "tween", ease: [0.4, 0, 0.2, 1], duration: 0.4 }}
+              className="fixed inset-y-0 left-0 z-[110] flex w-[60vw] flex-col bg-white text-slate-900 lg:hidden shadow-2xl border-r border-slate-200 p-4 sm:p-6"
             >
               <div className="flex items-center justify-between mb-10">
                 <div className="flex items-center gap-3">

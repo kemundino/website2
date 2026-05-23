@@ -28,6 +28,7 @@ import ReservationSystem from "@/components/ReservationSystem";
 import RestaurantOperationsDashboard from "@/components/RestaurantOperationsDashboard";
 import AdminProfilePage from "@/pages/AdminProfilePage";
 import UserManagement from "@/components/UserManagement";
+import AdminMessages from "@/components/AdminMessages";
 
 const AdminPage = () => {
   const { user, logout } = useAuth();
@@ -101,6 +102,7 @@ const AdminPage = () => {
     { id: "staff", label: "Staff", icon: UserPlus, color: "text-cyan-500", bg: "bg-cyan-50" },
     { id: "reservations", label: "Reservations", icon: Calendar, color: "text-rose-500", bg: "bg-rose-50" },
     { id: "operations", label: "Operations", icon: Activity, color: "text-slate-500 dark:text-muted-foreground", bg: "bg-slate-50 dark:bg-background" },
+    { id: "messages", label: "Messages", icon: MessageSquare, color: "text-violet-500", bg: "bg-violet-50" },
     { id: "profile", label: "My Profile", icon: UserIcon, color: "text-indigo-600", bg: "bg-indigo-50" },
   ];
 
@@ -460,6 +462,7 @@ const AdminPage = () => {
           {tab === "staff" && <StaffManagement />}
           {tab === "reservations" && <ReservationSystem />}
           {tab === "operations" && <RestaurantOperationsDashboard />}
+          {tab === "messages" && <AdminMessages />}
           {tab === "profile" && <AdminProfilePage onTabChange={(newTab: string) => setTab(newTab)} />}
 
           {/* Fallback if no tab matches */}

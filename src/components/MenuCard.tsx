@@ -18,7 +18,8 @@ const MenuCard = ({ item }: { item: MenuItem }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className="group relative overflow-hidden rounded-xl border border-border bg-card shadow-card transition-shadow hover:shadow-elevated sm:rounded-2xl"
+      className="group relative overflow-hidden rounded-xl border border-border bg-card shadow-card
+       transition-shadow hover:shadow-elevated sm:rounded-2xl"
     >
       <div className="relative aspect-square sm:aspect-[4/3] overflow-hidden">
         <img

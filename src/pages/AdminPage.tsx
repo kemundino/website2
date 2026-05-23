@@ -392,13 +392,12 @@ const AdminPage = () => {
                       style={{ position: 'fixed' }}
                     />
                     <motion.div
-                      initial={{ opacity: 0, y: "100%" }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: "100%" }}
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                      className="fixed bottom-0 left-0 right-0 z-[120] w-full rounded-t-[2.5rem] bg-white dark:bg-card/95 backdrop-blur-xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-slate-100 dark:border-border/50 overflow-hidden sm:absolute sm:top-full sm:right-0 sm:bottom-auto sm:left-auto sm:mt-3 sm:w-72 sm:rounded-[2.25rem] sm:shadow-2xl sm:border sm:border-slate-100 dark:border-border/50 sm:z-50"
+                      className="absolute top-full right-0 mt-3 w-[calc(100vw-2rem)] max-w-[320px] sm:w-72 bg-white dark:bg-card/95 backdrop-blur-xl rounded-[2rem] shadow-2xl border border-slate-100 dark:border-border/50 z-[120] overflow-hidden"
                     >
-                      <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-4 mb-2 sm:hidden" />
                     <div className="p-5 sm:p-6 bg-slate-50 dark:bg-background/50 border-b border-slate-100 dark:border-border/50">
                       <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-muted-foreground/80 uppercase tracking-[0.2em] mb-1 whitespace-nowrap">Authenticated As</p>
                       <p className="font-black text-slate-900 dark:text-foreground truncate text-xs sm:text-sm">{user.email}</p>

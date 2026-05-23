@@ -24,6 +24,7 @@ const Navbar = () => {
       document.body.style.overflow = "";
       document.body.style.backgroundColor = "";
       if (root) {
+        root.style.transition = "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)";
         root.style.transform = "translateX(0)";
         setTimeout(() => {
           if (!document.getElementById("root")?.style.transform.includes("60vw")) {

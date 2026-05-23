@@ -16,7 +16,7 @@ const Footer = () => {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-warm">
               <ChefHat className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-display text-xl font-bold text-foreground">BiteBuzz</span>
+            <span className="font-display text-xl font-bold text-foreground">Family Restaurant</span>
           </Link>
           <p className="text-sm text-muted-foreground">
             Delivering happiness and delicious food right to your doorstep.
@@ -24,7 +24,7 @@ const Footer = () => {
         </div>
 
         <div>
-          <h3 className="mb-4 font-bold text-foreground">Quick Links</h3>
+          <h4 className="mb-4 font-bold text-foreground">Quick Links</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li><Link to="/" className="hover:text-primary transition-colors">Menu</Link></li>
             <li><Link to="/cart" className="hover:text-primary transition-colors">Cart</Link></li>
@@ -34,27 +34,26 @@ const Footer = () => {
         </div>
 
         <div>
-          <h3 className="mb-4 font-bold text-foreground">Contact</h3>
+          <h4 className="mb-4 font-bold text-foreground">Contact</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li className="flex items-center gap-2"><Mail className="h-4 w-4" /> contact@bitebuzz.com</li>
-            <li className="flex items-center gap-2"><Phone className="h-4 w-4" /> +1 (555) 123-4567</li>
+            <li className="flex items-center gap-2"><Mail className="h-4 w-4" /> kedirmundino05@gmail.com</li>
+            <li className="flex items-center gap-2"><Phone className="h-4 w-4" /> +251994514333</li>
           </ul>
         </div>
-
         <div>
-          <h3 className="mb-4 font-bold text-foreground">Follow Us</h3>
+          <h4 className="mb-4 font-bold text-foreground">Follow Us</h4>
           <div className="flex gap-4">
-            <a href="https://tiktok.com/@bitebuzz" target="_blank" rel="noopener noreferrer" className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors">
+            <a href="https://tiktok.com/@ohhsheet2" target="_blank" rel="noopener noreferrer" className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors">
               <Video className="h-5 w-5" />
             </a>
-            <a href="https://t.me/bitebuzz_support" target="_blank" rel="noopener noreferrer" className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors">
+            <a href="https://t.me/kedirhala" target="_blank" rel="noopener noreferrer" className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors">
               <MessageCircle className="h-5 w-5" />
             </a>
           </div>
         </div>
       </div>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-12 border-t border-border pt-6 text-center text-sm text-muted-foreground">
-        &copy; {new Date().getFullYear()} BiteBuzz. All rights reserved.
+        &copy; {new Date().getFullYear()} Family Restaurant. All rights reserved.
       </div>
     </footer>
   );

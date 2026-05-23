@@ -69,7 +69,7 @@ const UnifiedMenu = ({ search = '', category = 'all', tag = 'all' }: UnifiedMenu
         {filteredItems.map((item) => (
           <Card key={item.id} className="overflow-hidden rounded-lg shadow-md">
             <CardContent className="p-0">
-              <div className="relative h-32 w-full">
+              <div className="relative h-26 w-full">
                 <img
                   src={item.image || '/api/placeholder/300/200'}
                   alt={item.name}

@@ -8,37 +8,37 @@ const ContactPage = () => {
     {
       id: "email",
       name: "Email",
-      value: "contact@bitebuzz.com",
+      value: "kedirmundino05@gmail.com",
       icon: <Mail className="h-6 w-6" />,
-      link: "mailto:contact@bitebuzz.com",
-      color: "text-blue-500",
+      link: "mailto:kedirmundino05@gmail.com",
+      color: "text-blue-400",
       bg: "bg-blue-50 dark:bg-blue-500/10",
     },
     {
       id: "phone",
       name: "Phone Number",
-      value: "+1 (555) 123-4567",
+      value: "+251994514333",
       icon: <Phone className="h-6 w-6" />,
-      link: "tel:+15551234567",
-      color: "text-green-500",
+      link: "tel:+251994514333",
+      color: "text-green-400",
       bg: "bg-green-50 dark:bg-green-500/10",
     },
     {
       id: "telegram",
       name: "Telegram",
-      value: "@bitebuzz_support",
+      value: "@kedirhala",
       icon: <MessageCircle className="h-6 w-6" />,
-      link: "https://t.me/bitebuzz_support",
-      color: "text-sky-500",
+      link: "https://t.me/kedirhala",
+      color: "text-sky-400",
       bg: "bg-sky-50 dark:bg-sky-500/10",
     },
     {
       id: "tiktok",
       name: "TikTok",
-      value: "@bitebuzz",
+      value: "@ohhsheet2",
       icon: <Video className="h-6 w-6" />,
-      link: "https://tiktok.com/@bitebuzz",
-      color: "text-pink-500",
+      link: "https://tiktok.com/@ohhsheet2",
+      color: "text-pink-400",
       bg: "bg-pink-50 dark:bg-pink-500/10",
     },
   ];
@@ -60,7 +60,7 @@ const ContactPage = () => {
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl mb-6"
+            className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl mb-6"
           >
             Get in Touch
           </motion.h1>
@@ -68,7 +68,7 @@ const ContactPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-lg leading-8 text-muted-foreground max-w-2xl mx-auto"
+            className="text-base leading-8 text-muted-foreground max-w-2xl mx-auto"
           >
             We'd love to hear from you. Whether you have a question about our menu, pricing, or anything else, our team is ready to answer all your questions.
           </motion.p>

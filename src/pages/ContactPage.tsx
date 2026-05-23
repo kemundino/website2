@@ -8,48 +8,6 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 const WEB3FORMS_KEY = "2c57d802-361f-42d5-9df3-74b7bc1abbcf";
 
-const contactMethods = [
-  {
-    id: "email",
-    name: "Email",
-    value: "kedirmundino05@gmail.com",
-    icon: <Mail className="h-5 w-5" />,
-    link: "mailto:kedirmundino05@gmail.com",
-    color: "text-blue-500",
-    bg: "bg-blue-50 dark:bg-blue-500/10",
-    border: "hover:border-blue-200 dark:hover:border-blue-500/30",
-  },
-  {
-    id: "phone",
-    name: "Phone",
-    value: "0994514333",
-    icon: <Phone className="h-5 w-5" />,
-    link: "tel:0994514333",
-    color: "text-emerald-500",
-    bg: "bg-emerald-50 dark:bg-emerald-500/10",
-    border: "hover:border-emerald-200 dark:hover:border-emerald-500/30",
-  },
-  {
-    id: "telegram",
-    name: "Telegram",
-    value: "@kedirhala",
-    icon: <MessageCircle className="h-5 w-5" />,
-    link: "https://t.me/kedirhala",
-    color: "text-sky-500",
-    bg: "bg-sky-50 dark:bg-sky-500/10",
-    border: "hover:border-sky-200 dark:hover:border-sky-500/30",
-  },
-  {
-    id: "tiktok",
-    name: "TikTok",
-    value: "@ohhsheet2",
-    icon: <Video className="h-5 w-5" />,
-    link: "https://tiktok.com/@ohhsheet2",
-    color: "text-pink-500",
-    bg: "bg-pink-50 dark:bg-pink-500/10",
-    border: "hover:border-pink-200 dark:hover:border-pink-500/30",
-  },
-];
 
 const ContactPage = () => {
   const [loading, setLoading] = useState(false);
@@ -251,5 +209,49 @@ const ContactPage = () => {
     </div>
   );
 };
+<h4 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4">Contact Direct</h4>
+const contactMethods = [
+  {
+    id: "email",
+    name: "Email",
+    value: "kedirmundino05@gmail.com",
+    icon: <Mail className="h-5 w-5" />,
+    link: "mailto:kedirmundino05@gmail.com",
+    color: "text-blue-500",
+    bg: "bg-blue-50 dark:bg-blue-500/10",
+    border: "hover:border-blue-200 dark:hover:border-blue-500/30",
+  },
+  {
+    id: "phone",
+    name: "Phone",
+    value: "0994514333",
+    icon: <Phone className="h-5 w-5" />,
+    link: "tel:0994514333",
+    color: "text-emerald-500",
+    bg: "bg-emerald-50 dark:bg-emerald-500/10",
+    border: "hover:border-emerald-200 dark:hover:border-emerald-500/30",
+  },
+  {
+    id: "telegram",
+    name: "Telegram",
+    value: "@kedirhala",
+    icon: <MessageCircle className="h-5 w-5" />,
+    link: "https://t.me/kedirhala",
+    color: "text-sky-500",
+    bg: "bg-sky-50 dark:bg-sky-500/10",
+    border: "hover:border-sky-200 dark:hover:border-sky-500/30",
+  },
+  {
+    id: "tiktok",
+    name: "TikTok",
+    value: "@ohhsheet2",
+    icon: <Video className="h-5 w-5" />,
+    link: "https://tiktok.com/@ohhsheet2",
+    color: "text-pink-500",
+    bg: "bg-pink-50 dark:bg-pink-500/10",
+    border: "hover:border-pink-200 dark:hover:border-pink-500/30",
+  },
+];
+
 
 export default ContactPage;

@@ -25,7 +25,7 @@ const ContactPage = () => {
     const message = (form.elements.namedItem("message") as HTMLTextAreaElement).value.trim();
 
     try {
-      // 1. Save to Firebase Firestore
+      // 1. Save to Firebase Firestore (always runs, works for guests too)
       await addDoc(collection(db, "messages"), {
         firstName,
         lastName,
@@ -35,25 +35,33 @@ const ContactPage = () => {
         createdAt: serverTimestamp(),
       });
 
-      // 2. Send email via Web3Forms
-      await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({
-          access_key: WEB3FORMS_KEY,
-          name: `${firstName} ${lastName}`,
-          email,
-          message,
-          subject: `New Contact Message from ${firstName} ${lastName} — BiteBuzz`,
-        }),
-      });
+      // 2. Send email via Web3Forms (best-effort — don't block on failure)
+      try {
+        const res = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            access_key: WEB3FORMS_KEY,
+            name: `${firstName} ${lastName}`,
+            email,
+            message,
+            subject: `New Contact Message from ${firstName} ${lastName} — BiteBuzz`,
+          }),
+        });
+        if (!res.ok) {
+          console.warn("Web3Forms response not OK:", res.status, await res.text());
+        }
+      } catch (emailErr) {
+        // Email failed but message is already saved in Firebase — not fatal
+        console.warn("Web3Forms email failed (message saved to Firebase):", emailErr);
+      }
 
       setSent(true);
       formRef.current?.reset();
       toast.success("Message sent! We'll get back to you soon.");
     } catch (err) {
-      console.error(err);
-      toast.error("Something went wrong. Please try again.");
+      console.error("Failed to save message to Firebase:", err);
+      toast.error("Something went wrong saving your message. Please try again.");
     } finally {
       setLoading(false);
     }

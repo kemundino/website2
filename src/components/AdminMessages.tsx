@@ -3,7 +3,6 @@ import { db } from "@/firebase/config";
 import {
   collection,
   onSnapshot,
-  orderBy,
   query,
   deleteDoc,
   doc,
@@ -30,13 +29,26 @@ const AdminMessages = () => {
   const [selected, setSelected] = useState<string | null>(null);
 
   useEffect(() => {
-    const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
-    const unsub = onSnapshot(q, (snap) => {
-      setMessages(
-        snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Message, "id">) }))
-      );
-      setLoading(false);
-    });
+    // No orderBy to avoid needing a Firestore composite index — sort client-side
+    const q = query(collection(db, "messages"));
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        const msgs = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Message, "id">) }));
+        // Sort newest first on the client
+        msgs.sort((a, b) => {
+          const aTime = a.createdAt?.toDate?.()?.getTime?.() ?? 0;
+          const bTime = b.createdAt?.toDate?.()?.getTime?.() ?? 0;
+          return bTime - aTime;
+        });
+        setMessages(msgs);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Messages listener error:", err);
+        setLoading(false);
+      }
+    );
     return () => unsub();
   }, []);
 

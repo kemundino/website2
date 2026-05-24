@@ -184,7 +184,7 @@ const Navbar = () => {
               <div className="flex items-center justify-between p-4">
                 <Link to="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
                   <ChefHat className="h-6 w-6 text-primary" />
-                  <span className="font-display text-lg font-medium text-foreground">BiteBuzz</span>
+                  <span className="font-display text-lg font-medium text-foreground">Family restaurant</span>
                 </Link>
                 <button
                   className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground"

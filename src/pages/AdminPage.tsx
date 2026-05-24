@@ -196,13 +196,6 @@ const AdminPage = () => {
             ${(item.price || 0).toFixed(2)}
           </Badge>
         </div>
-        {item.tag === 'custom' && (
-          <div className="absolute top-5 left-5">
-            <Badge className="bg-purple-600 text-white dark:text-background border-none font-black text-[10px] uppercase px-3 py-1 rounded-lg shadow-xl tracking-widest">
-              Custom Creation
-            </Badge>
-          </div>
-        )}
       </div>
       <div className="p-8">
         <div className="flex justify-between items-start mb-2">

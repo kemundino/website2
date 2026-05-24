@@ -59,15 +59,28 @@ const Navbar = () => {
       const touch = event.changedTouches[0];
       const deltaX = touch.clientX - touchStart.current.x;
       const deltaY = touch.clientY - touchStart.current.y;
-      touchStart.current = null;
-
-      if (Math.abs(deltaX) < 60 || Math.abs(deltaY) > 50) return;
-
-      if (!mobileOpen && deltaX > 60) {
-        setMobileOpen(true);
-      } else if (mobileOpen && deltaX < -60) {
-        setMobileOpen(false);
+      
+      // Only consider horizontal swipes; ignore if too much vertical movement
+      if (Math.abs(deltaY) > Math.abs(deltaX) || Math.abs(deltaX) < 80) {
+        touchStart.current = null;
+        return;
       }
+
+      // Swipe right (from left edge) to open sidebar
+      if (!mobileOpen && deltaX > 80 && touchStart.current.x < 50) {
+        setMobileOpen(true);
+        touchStart.current = null;
+        return;
+      }
+
+      // Swipe left to close sidebar
+      if (mobileOpen && deltaX < -80) {
+        setMobileOpen(false);
+        touchStart.current = null;
+        return;
+      }
+
+      touchStart.current = null;
     };
 
     document.addEventListener("touchstart", handleTouchStart, { passive: true });

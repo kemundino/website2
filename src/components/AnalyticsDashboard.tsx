@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useRealtimeOrders } from '@/hooks/useRealtimeOrders'
-import { useReviews } from '@/hooks/useReviews'
+/* import { useReviews } from '@/hooks/useReviews' */
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -12,7 +12,7 @@ const COLORS = ['#f97316', '#fb923c', '#fdba74', '#fed7aa', '#ffedd5']
 
 const AnalyticsDashboard = () => {
   const { orders } = useRealtimeOrders()
-  const { reviews } = useReviews()
+  /* const { reviews } = useReviews() */
 
   const stats = useMemo(() => {
     const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0)

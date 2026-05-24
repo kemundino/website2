@@ -214,7 +214,7 @@ const AdminPage = () => {
                   onClick={() => setTab(item.id)}
                   className={`w-full flex items-center gap-3 px-3 xl:px-4 py-3 rounded-2xl font-bold text-xs xl:text-sm transition-all duration-300 ${isActive
                     ? "bg-slate-900 dark:bg-foreground text-white dark:text-background shadow-2xl shadow-slate-300 scale-[1.02]"
-                    : "text-slate-500 dark:text-muted-foreground hover:bg-slate-50 dark:bg-background hover:text-slate-900 dark:text-foreground"
+                    : "text-slate-500 dark:text-muted-foreground hover:bg-transparent hover:text-slate-900 dark:text-foreground"
                     }`}
                 >
                   <div className={`p-2 rounded-xl transition-colors ${isActive ? "bg-white dark:bg-card/10" : item.bg}`}>
@@ -277,7 +277,7 @@ const AdminPage = () => {
                   <button
                     key={item.id}
                     onClick={() => { setTab(item.id); setIsSidebarOpen(false); }}
-                    className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-black transition-all ${isActive ? "bg-slate-900 dark:bg-foreground text-white dark:text-background shadow-xl shadow-slate-200" : "text-slate-500 dark:text-muted-foreground hover:bg-slate-50 dark:bg-background"
+                    className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-black transition-all ${isActive ? "bg-slate-900 dark:bg-foreground text-white dark:text-background shadow-xl shadow-slate-200" : "text-slate-500 dark:text-muted-foreground hover:bg-transparent"
                       }`}
                   >
                     <Icon className="h-5 w-5" />

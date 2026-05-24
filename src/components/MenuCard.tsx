@@ -18,8 +18,7 @@ const MenuCard = ({ item }: { item: MenuItem }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className="group relative overflow-hidden rounded-xl border border-border bg-card shadow-card
-       transition-shadow hover:shadow-elevated sm:rounded-2xl"
+      className="group relative overflow-hidden rounded-xl border border-border bg-card shadow-card transition-shadow hover:shadow-elevated sm:rounded-2xl max-w-[20rem] sm:max-w-[22rem]"
     >
       <div className="relative aspect-square sm:aspect-[4/3] overflow-hidden">
         <img
@@ -40,10 +39,10 @@ const MenuCard = ({ item }: { item: MenuItem }) => {
         )}
       </div>
 
-      <div className="p-3 sm:p-4">
+      <div className="p-2 sm:p-3">
         <div className="mb-1 flex items-start justify-between">
-          <h3 className="font-display text-base font-semibold text-foreground sm:text-lg">{item.name}</h3>
-          <span className="ml-2 whitespace-nowrap font-body text-sm font-bold text-primary sm:text-lg">
+          <h3 className="font-display text-sm font-semibold text-foreground sm:text-base">{item.name}</h3>
+          <span className="ml-2 whitespace-nowrap font-body text-xs font-bold text-primary sm:text-sm">
             ${item.price.toFixed(2)}
           </span>
         </div>
@@ -64,7 +63,7 @@ const MenuCard = ({ item }: { item: MenuItem }) => {
 
           <button
             onClick={handleAdd}
-            className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-transform hover:scale-110 active:scale-95"
+            className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-transform hover:scale-110 active:scale-95"
           >
             <Plus className="h-4 w-4" />
           </button>

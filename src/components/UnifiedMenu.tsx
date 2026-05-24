@@ -65,11 +65,11 @@ const UnifiedMenu = ({ search = '', category = 'all', tag = 'all' }: UnifiedMenu
 
   return (
     <div className="container mx-auto px-4 sm:px-6">
-      <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
         {filteredItems.map((item) => (
-          <Card key={item.id} className="overflow-hidden rounded-lg shadow-md">
+          <Card key={item.id} className="overflow-hidden rounded-lg shadow-md max-w-[20rem] sm:max-w-[22rem]">
             <CardContent className="p-0">
-              <div className="relative h-26 w-full">
+              <div className="relative h-24 w-full">
                 <img
                   src={item.image || '/api/placeholder/300/200'}
                   alt={item.name}
@@ -86,8 +86,8 @@ const UnifiedMenu = ({ search = '', category = 'all', tag = 'all' }: UnifiedMenu
               </div>
               <div className="p-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-foreground sm:text-base">{item.name}</h3>
-                  <span className="text-xs font-bold text-primary sm:text-sm">
+                  <h3 className="text-sm font-medium text-foreground">{item.name}</h3>
+                  <span className="text-xs font-bold text-primary">
                     ${item.price.toFixed(2)}
                   </span>
                 </div>

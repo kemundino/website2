@@ -1,4 +1,4 @@
-/*import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
 export interface Review {
   id: string
@@ -10,24 +10,7 @@ export interface Review {
 }
 
 // Mock database for reviews
-let mockReviews: Review[] = [
-  {
-    id: 'REV001',
-    orderId: 'ORD001',
-    customerName: 'John Doe',
-    rating: 5,
-    comment: 'Best pizza in town! Arrived hot and fresh.',
-    createdAt: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    id: 'REV002',
-    orderId: 'ORD002',
-    customerName: 'Jane Smith',
-    rating: 4,
-    comment: 'The burger was great, but the fries were a bit cold.',
-    createdAt: new Date(Date.now() - 43200000).toISOString()
-  }
-]
+const mockReviews: Review[] = []
 
 const reviewSubscribers = new Set<(reviews: Review[]) => void>()
 
@@ -35,7 +18,7 @@ const notifySubscribers = () => {
   reviewSubscribers.forEach(callback => callback([...mockReviews]))
 }
 
-export const useReviews = () => {
+export function useReviews() {
   const [reviews, setReviews] = useState<Review[]>(mockReviews)
 
   useEffect(() => {
@@ -69,4 +52,5 @@ export const useReviews = () => {
     getReviewsByOrderId
   }
 }
-*/
+
+export default useReviews

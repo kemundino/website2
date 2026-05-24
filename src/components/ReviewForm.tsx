@@ -3,7 +3,7 @@ import { Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useReviews } from '@/hooks/useReviews'
+import useReviews from '@/hooks/useReviews'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 

@@ -420,7 +420,7 @@ const AdminPage = () => {
           {tab === "regular-items" && (
             <div className="space-y-8 sm:space-y-12">
               <h3 className="text-sm sm:text-lg font-black text-slate-400 dark:text-muted-foreground/80 uppercase tracking-[0.2em] mb-6 sm:mb-8 ml-2 sm:ml-4">Regular Menu Inventory</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-6">
                 {regularItems.map((item) => (
                   <MenuCard key={item.id} item={item} />
                 ))}
@@ -441,7 +441,7 @@ const AdminPage = () => {
                 <Sparkles className="h-5 w-5" />
                 Custom Creation Vault
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-6">
                 {customItems.map((item) => (
                   <MenuCard key={item.id} item={item} />
                 ))}

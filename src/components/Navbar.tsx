@@ -59,28 +59,15 @@ const Navbar = () => {
       const touch = event.changedTouches[0];
       const deltaX = touch.clientX - touchStart.current.x;
       const deltaY = touch.clientY - touchStart.current.y;
-      
-      // Only consider horizontal swipes; ignore if too much vertical movement
-      if (Math.abs(deltaY) > Math.abs(deltaX) || Math.abs(deltaX) < 80) {
-        touchStart.current = null;
-        return;
-      }
-
-      // Swipe right (from left edge) to open sidebar
-      if (!mobileOpen && deltaX > 80 && touchStart.current.x < 50) {
-        setMobileOpen(true);
-        touchStart.current = null;
-        return;
-      }
-
-      // Swipe left to close sidebar
-      if (mobileOpen && deltaX < -80) {
-        setMobileOpen(false);
-        touchStart.current = null;
-        return;
-      }
-
       touchStart.current = null;
+
+      if (Math.abs(deltaX) < 60 || Math.abs(deltaY) > 50) return;
+
+      if (!mobileOpen && deltaX > 60) {
+        setMobileOpen(true);
+      } else if (mobileOpen && deltaX < -60) {
+        setMobileOpen(false);
+      }
     };
 
     document.addEventListener("touchstart", handleTouchStart, { passive: true });
@@ -187,7 +174,7 @@ const Navbar = () => {
             
             {/* Sidebar */}
             <aside
-              className="fixed inset-y-0 left-0 z-[110] flex w-[60vw] flex-col bg-transparent text-foreground md:hidden shadow-2xl border-r border-border"
+              className="fixed inset-y-0 left-0 z-[110] flex w-[60vw] flex-col bg-muted text-foreground md:hidden shadow-2xl border-r border-border"
               style={{
                 transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)'

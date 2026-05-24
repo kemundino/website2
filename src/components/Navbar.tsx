@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { LogOut, ChefHat, Menu, X, LayoutDashboard, User as UserIcon, Briefcase, Package, Utensils, ShoppingCart, Phone } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContextFirebase";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 
 const Navbar = () => {
@@ -10,6 +10,7 @@ const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const root = document.getElementById("root");
@@ -41,6 +42,40 @@ const Navbar = () => {
         root.style.transform = "";
         root.style.transition = "";
       }
+    };
+  }, [mobileOpen]);
+
+  useEffect(() => {
+    const isMobile = () => window.matchMedia("(max-width: 767px)").matches;
+
+    const handleTouchStart = (event: TouchEvent) => {
+      if (!isMobile() || event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      touchStart.current = { x: touch.clientX, y: touch.clientY };
+    };
+
+    const handleTouchEnd = (event: TouchEvent) => {
+      if (!touchStart.current || !isMobile()) return;
+      const touch = event.changedTouches[0];
+      const deltaX = touch.clientX - touchStart.current.x;
+      const deltaY = touch.clientY - touchStart.current.y;
+      touchStart.current = null;
+
+      if (Math.abs(deltaX) < 60 || Math.abs(deltaY) > 50) return;
+
+      if (!mobileOpen && deltaX > 60) {
+        setMobileOpen(true);
+      } else if (mobileOpen && deltaX < -60) {
+        setMobileOpen(false);
+      }
+    };
+
+    document.addEventListener("touchstart", handleTouchStart, { passive: true });
+    document.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchend", handleTouchEnd);
     };
   }, [mobileOpen]);
 
@@ -139,7 +174,7 @@ const Navbar = () => {
             
             {/* Sidebar */}
             <aside
-              className="fixed inset-y-0 left-0 z-[110] flex w-[60vw] flex-col bg-card text-foreground md:hidden shadow-2xl border-r border-border"
+              className="fixed inset-y-0 left-0 z-[110] flex w-[60vw] flex-col bg-transparent text-foreground md:hidden shadow-2xl border-r border-border"
               style={{
                 transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)'

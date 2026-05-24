@@ -247,7 +247,7 @@ const AdminPage = () => {
       {typeof document !== 'undefined' && createPortal(
         <>
           <div
-            className={`fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] lg:hidden transition-opacity duration-[400ms] ${isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+            className={`fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] lg:hidden transition-opacity [duration:400ms] ${isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
             onClick={() => setIsSidebarOpen(false)}
           />
           <aside

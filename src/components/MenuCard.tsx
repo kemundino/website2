@@ -18,7 +18,8 @@ const MenuCard = ({ item }: { item: MenuItem }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className="group relative overflow-hidden rounded-xl border border-border bg-card shadow-card transition-shadow hover:shadow-elevated sm:rounded-2xl max-w-[20rem] sm:max-w-[22rem]"
+      /*className="group relative overflow-hidden rounded-xl border border-border bg-card shadow-card transition-shadow hover:shadow-elevated sm:rounded-2xl max-w-[20rem] sm:max-w-[22rem]"*/
+      className="group relative overflow-hidden rounded-xl border border-border bg-transparent shadow-card transition-shadow hover:shadow-elevated sm:rounded-2xl max-w-[20rem] sm:max-w-[22rem]"
     >
       <div className="relative aspect-square sm:aspect-[4/3] overflow-hidden">
         <img
@@ -39,7 +40,7 @@ const MenuCard = ({ item }: { item: MenuItem }) => {
         )}
       </div>
 
-      <div className="p-2 sm:p-3">
+      <div className="p-2 sm:p-3 bg-transparent">
         <div className="mb-1 flex items-start justify-between">
           <h3 className="font-display text-sm font-semibold text-foreground sm:text-base">{item.name}</h3>
           <span className="ml-2 whitespace-nowrap font-body text-xs font-bold text-primary sm:text-sm">

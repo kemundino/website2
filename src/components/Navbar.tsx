@@ -133,7 +133,7 @@ const Navbar = () => {
           <>
             {/* Overlay */}
             <div
-              className={`fixed inset-0 z-[100] bg-white/40 backdrop-blur-[2px] md:hidden transition-opacity duration-[400ms] ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+              className={`fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] md:hidden transition-opacity duration-[400ms] ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
               onClick={() => setMobileOpen(false)}
             />
             

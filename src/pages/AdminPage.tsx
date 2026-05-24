@@ -286,7 +286,7 @@ const AdminPage = () => {
             onClick={() => setIsSidebarOpen(false)}
           />
           <aside
-            className="fixed inset-y-0 left-0 z-[110] flex w-[60vw] flex-col bg-white dark:bg-card text-slate-900 dark:text-foreground lg:hidden shadow-2xl border-r border-slate-200 dark:border-border p-4 sm:p-6"
+            className="fixed inset-y-0 left-0 z-[110] flex w-[60vw] flex-col bg-muted text-foreground lg:hidden shadow-2xl border-r border-border p-4 sm:p-6"
             style={{
               transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
               transform: isSidebarOpen ? 'translateX(0)' : 'translateX(-100%)'
@@ -294,13 +294,13 @@ const AdminPage = () => {
           >
             <div className="flex items-center justify-between mb-10">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-slate-900 dark:bg-foreground rounded-xl">
-                  <Utensils className="h-6 w-6 text-white dark:text-background" />
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Utensils className="h-5 w-5 text-primary" />
                 </div>
-                <span className="font-display font-black text-2xl text-slate-900 dark:text-foreground tracking-tight">AdminPro</span>
+                <span className="font-display font-black text-lg text-foreground tracking-tight">AdminPro</span>
               </div>
               <Button variant="ghost" size="icon" className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground" onClick={() => setIsSidebarOpen(false)}>
-                <X className="h-6 w-6" />
+                <X className="h-5 w-5" />
               </Button>
             </div>
 
@@ -312,20 +312,28 @@ const AdminPage = () => {
                   <button
                     key={item.id}
                     onClick={() => { setTab(item.id); setIsSidebarOpen(false); }}
-                    className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-black transition-all ${isActive ? "bg-slate-900 dark:bg-foreground text-white dark:text-background shadow-xl shadow-slate-200" : "text-slate-500 dark:text-muted-foreground hover:bg-transparent"
-                      }`}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-transparent hover:text-foreground"
+                    }`}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-4 w-4" />
                     {item.label}
                   </button>
                 );
               })}
             </nav>
 
-            <div className="mt-8 pt-8 border-t border-slate-100 dark:border-border/50">
-              <Button variant="outline" className="w-full h-14 justify-start rounded-2xl font-black text-destructive border-slate-200 dark:border-border" onClick={logout}>
-                <LogOut className="h-5 w-5 mr-3" /> Sign Out
-              </Button>
+            <div className="mt-8 pt-6 border-t border-border/50">
+              <button
+                onClick={logout}
+                className="w-full flex items-center justify-between gap-3 rounded-lg px-4 py-3 text-sm font-medium text-destructive hover:bg-destructive/5 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <LogOut className="h-4 w-4" />
+                  <span>Sign Out</span>
+                </div>
+              </button>
             </div>
           </aside>
         </>,

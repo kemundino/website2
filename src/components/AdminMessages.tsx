@@ -12,6 +12,7 @@ import { Trash2, Mail, MailOpen, Clock, User, RefreshCw, Inbox } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/context/AuthContextFirebase";
 
 interface Message {
   id: string;
@@ -24,12 +25,27 @@ interface Message {
 }
 
 const AdminMessages = () => {
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    // No orderBy to avoid needing a Firestore composite index — sort client-side
+    if (authLoading) {
+      return;
+    }
+
+    if (!isAuthenticated || user?.role !== "admin") {
+      setMessages([]);
+      setLoading(false);
+      setErrorMessage("You must be signed in as an admin to view messages.");
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage(null);
+
     const q = query(collection(db, "messages"));
     const unsub = onSnapshot(
       q,
@@ -47,19 +63,30 @@ const AdminMessages = () => {
       (err) => {
         console.error("Messages listener error:", err);
         setLoading(false);
+        setErrorMessage("Unable to load messages. Please check your admin permissions.");
       }
     );
     return () => unsub();
-  }, []);
+  }, [authLoading, isAuthenticated, user?.role]);
 
   const markRead = async (id: string) => {
-    await updateDoc(doc(db, "messages", id), { read: true });
+    try {
+      await updateDoc(doc(db, "messages", id), { read: true });
+    } catch (err) {
+      console.error("Failed to mark message read:", err);
+      toast.error("Unable to mark message as read.");
+    }
   };
 
   const handleDelete = async (id: string) => {
-    await deleteDoc(doc(db, "messages", id));
-    if (selected === id) setSelected(null);
-    toast.success("Message deleted.");
+    try {
+      await deleteDoc(doc(db, "messages", id));
+      if (selected === id) setSelected(null);
+      toast.success("Message deleted.");
+    } catch (err) {
+      console.error("Failed to delete message:", err);
+      toast.error("Unable to delete message.");
+    }
   };
 
   const unreadCount = messages.filter((m) => !m.read).length;
@@ -97,7 +124,17 @@ const AdminMessages = () => {
         )}
       </div>
 
-      {loading ? (
+      {errorMessage ? (
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center py-16">
+          <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-slate-100 dark:bg-muted">
+            <Inbox className="h-9 w-9 text-slate-400 dark:text-muted-foreground" />
+          </div>
+          <div>
+            <p className="font-bold text-slate-700 dark:text-foreground/90">{errorMessage}</p>
+            <p className="text-sm text-slate-400 dark:text-muted-foreground mt-1">Please log in with an admin account and refresh the page.</p>
+          </div>
+        </div>
+      ) : loading ? (
         <div className="flex-1 flex items-center justify-center">
           <RefreshCw className="h-6 w-6 animate-spin text-slate-400" />
         </div>

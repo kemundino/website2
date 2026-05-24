@@ -67,7 +67,6 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="mt-10 border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <span>&copy; {new Date().getFullYear()} BiteBuzz. All rights reserved.</span>
-          <span className="text-center sm:text-right">Made with ❤️ for great food experiences</span>
         </div>
       </div>
     </footer>

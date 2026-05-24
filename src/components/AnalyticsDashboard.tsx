@@ -291,19 +291,8 @@ const AnalyticsDashboard = () => {
             </div>
           </CardContent>
         </Card>
-        {/* Recent Reviews */}
+        {/* Recent Reviews 
         <Card className="shadow-sm lg:col-span-2">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Recent Customer Reviews</CardTitle>
-                <CardDescription>Latest feedback from your customers</CardDescription>
-              </div>
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <MessageSquare className="h-5 w-5 text-orange-600" />
-              </div>
-            </div>
-          </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {reviews.slice(0, 6).map((review) => (
@@ -338,6 +327,7 @@ const AnalyticsDashboard = () => {
             </div>
           </CardContent>
         </Card>
+        */}
       </div>
     </div>
   )

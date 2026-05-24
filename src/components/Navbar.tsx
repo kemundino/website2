@@ -15,7 +15,7 @@ const Navbar = () => {
     const root = document.getElementById("root");
     if (mobileOpen) {
       document.body.style.overflow = "hidden";
-      document.body.style.backgroundColor = "#000"; // Prevent white flash behind root
+      document.body.style.backgroundColor = ""; // prevent background color change on mobile when sidebar is open 
       if (root) {
         root.style.transform = "translateX(60vw)";
         root.style.transition = "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)";
@@ -79,7 +79,7 @@ const Navbar = () => {
           <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-warm">
             <ChefHat className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="font-display text-xl font-bold text-foreground">BiteBuzz</span>
+          <span className="font-display text-xl font-bold text-foreground">Family</span>
         </Link>
 
         {/* Desktop */}
@@ -149,10 +149,10 @@ const Navbar = () => {
               <div className="flex items-center justify-between p-4">
                 <Link to="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
                   <ChefHat className="h-6 w-6 text-primary" />
-                  <span className="font-display text-lg font-medium text-foreground">BiteBuzz</span>
+                  <span className="font-display text-lg font-medium text-foreground">Family</span>
                 </Link>
                 <button
-                  className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground"
                   onClick={() => setMobileOpen(false)}
                 >
                   <X className="h-6 w-6" />
@@ -170,7 +170,7 @@ const Navbar = () => {
                       className={`group relative flex items-center gap-3 rounded-lg px-3 py-3 text-sm transition-colors ${
                         isActive(link.to)
                           ? "bg-muted text-foreground font-semibold"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                          : "text-muted-foreground hover:bg-transparent hover:text-foreground"
                       }`}
                       onClick={() => setMobileOpen(false)}
                     >
@@ -194,7 +194,7 @@ const Navbar = () => {
                       logout();
                       setMobileOpen(false);
                     }}
-                    className="flex w-full items-center justify-between gap-3 rounded-lg p-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    className="flex w-full items-center justify-between gap-3 rounded-lg p-3 text-sm font-medium text-muted-foreground hover:bg-transparent hover:text-foreground transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded bg-gradient-to-tr from-blue-500 to-blue-400 text-white">

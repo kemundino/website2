@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+/*import { useState, useEffect } from 'react'
 
 export interface Review {
   id: string
@@ -69,3 +69,4 @@ export const useReviews = () => {
     getReviewsByOrderId
   }
 }
+*/

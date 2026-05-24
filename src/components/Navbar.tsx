@@ -48,7 +48,7 @@ const Navbar = () => {
     // Admin navigation
     ...(user?.role === "admin" ? [
       { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
-      { to: "/admin/profile", label: "Profile", icon: UserIcon }
+      { to: "/admin/profile", label: "My Profile", icon: UserIcon }
     ] : user?.role === "staff" ? [
       // Staff navigation
       { to: "/staff", label: "My Portal", icon: Briefcase },
@@ -133,7 +133,7 @@ const Navbar = () => {
           <>
             {/* Overlay */}
             <div
-              className={`fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] md:hidden transition-opacity duration-[400ms] ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+              className={`fixed inset-0 z-[100] bg-white/40 backdrop-blur-[2px] md:hidden transition-opacity duration-[400ms] ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
               onClick={() => setMobileOpen(false)}
             />
             
@@ -149,7 +149,7 @@ const Navbar = () => {
               <div className="flex items-center justify-between p-4">
                 <Link to="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
                   <ChefHat className="h-6 w-6 text-primary" />
-                  <span className="font-display text-lg font-medium text-foreground">BiteBuzz</span>
+                  <span className="font-display text-lg font-medium text-foreground">FamilyRestaurant</span>
                 </Link>
                 <button
                   className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"

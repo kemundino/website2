@@ -40,6 +40,7 @@ const AdminPage = () => {
   const [editItem, setEditItem] = useState<UnifiedItem | null>(null);
   const [showForm, setShowForm] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -85,6 +86,40 @@ const AdminPage = () => {
     };
   }, [isSidebarOpen]);
 
+  useEffect(() => {
+    const isMobile = () => window.matchMedia("(max-width: 767px)").matches;
+
+    const handleTouchStart = (event: TouchEvent) => {
+      if (!isMobile() || event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      touchStart.current = { x: touch.clientX, y: touch.clientY };
+    };
+
+    const handleTouchEnd = (event: TouchEvent) => {
+      if (!touchStart.current || !isMobile()) return;
+      const touch = event.changedTouches[0];
+      const deltaX = touch.clientX - touchStart.current.x;
+      const deltaY = touch.clientY - touchStart.current.y;
+      touchStart.current = null;
+
+      if (Math.abs(deltaX) < 60 || Math.abs(deltaY) > 50) return;
+
+      if (!isSidebarOpen && deltaX > 60) {
+        setIsSidebarOpen(true);
+      } else if (isSidebarOpen && deltaX < -60) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener("touchstart", handleTouchStart, { passive: true });
+    document.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [isSidebarOpen]);
+
   if (!user || user.role !== "admin") {
     return <Navigate to="/auth" replace />;
   }
@@ -109,7 +144,7 @@ const AdminPage = () => {
   const regularItems = (items || []).filter(item => item?.tag === 'regular');
   const customItems = (items || []).filter(item => item?.tag === 'custom');
 
-  const handleSave = (itemData: any) => {
+  const handleSave = (itemData: unknown) => {
     try {
       if (editItem) {
         const success = updateItem(editItem.id, itemData);
@@ -264,7 +299,7 @@ const AdminPage = () => {
                 </div>
                 <span className="font-display font-black text-2xl text-slate-900 dark:text-foreground tracking-tight">AdminPro</span>
               </div>
-              <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => setIsSidebarOpen(false)}>
+              <Button variant="ghost" size="icon" className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground" onClick={() => setIsSidebarOpen(false)}>
                 <X className="h-6 w-6" />
               </Button>
             </div>
@@ -303,7 +338,7 @@ const AdminPage = () => {
         <header className="sticky top-0 w-full bg-white dark:bg-card/80 backdrop-blur-xl border-b border-slate-200 dark:border-border z-40 px-[5%] py-4 flex items-center justify-between">
           {/* Left Section */}
           <div className="flex-1 flex items-center">
-            <Button variant="ghost" size="icon" className="lg:hidden rounded-xl bg-slate-50 dark:bg-background" onClick={() => setIsSidebarOpen(true)}>
+            <Button variant="ghost" size="icon" className="lg:hidden rounded-lg p-2" onClick={() => setIsSidebarOpen(true)}>
               <MenuIcon className="h-6 w-6" />
             </Button>
             <div className="hidden lg:block">

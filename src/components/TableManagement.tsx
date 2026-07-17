@@ -73,12 +73,12 @@ const TableManagement = () => {
 
   const getStatusColor = (status: Table['status']) => {
     switch (status) {
-      case 'available': return 'bg-green-100 text-green-800 border-green-200';
-      case 'occupied': return 'bg-red-100 text-red-800 border-red-200';
-      case 'reserved': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'cleaning': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'maintenance': return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'available': return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800';
+      case 'occupied': return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800';
+      case 'reserved': return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800';
+      case 'cleaning': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800';
+      case 'maintenance': return 'bg-muted text-muted-foreground border-border';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -161,8 +161,8 @@ const TableManagement = () => {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card className="p-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-gray-100 rounded-lg">
-              <MapPin className="h-5 w-5 text-gray-600" />
+            <div className="p-2 bg-muted rounded-lg">
+              <MapPin className="h-5 w-5 text-muted-foreground" />
             </div>
             <div>
               <p className="text-2xl font-bold">{stats.total}</p>
@@ -173,8 +173,8 @@ const TableManagement = () => {
         
         <Card className="p-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+            <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
+              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-green-600">{stats.available}</p>
@@ -185,8 +185,8 @@ const TableManagement = () => {
         
         <Card className="p-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <Users className="h-5 w-5 text-red-600" />
+            <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-lg">
+              <Users className="h-5 w-5 text-red-600 dark:text-red-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-red-600">{stats.occupied}</p>
@@ -197,8 +197,8 @@ const TableManagement = () => {
         
         <Card className="p-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <Clock className="h-5 w-5 text-yellow-600" />
+            <div className="p-2 bg-yellow-100 dark:bg-yellow-900/40 rounded-lg">
+              <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-yellow-600">{stats.reserved}</p>
@@ -209,8 +209,8 @@ const TableManagement = () => {
         
         <Card className="p-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <AlertCircle className="h-5 w-5 text-blue-600" />
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+              <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-blue-600">{stats.cleaning}</p>
@@ -266,7 +266,7 @@ const TableManagement = () => {
           <CardTitle>Restaurant Floor Plan</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg min-h-[300px] sm:min-h-[400px]">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 p-3 sm:p-4 bg-muted/50 rounded-lg min-h-[300px] sm:min-h-[400px]">
             {tables.map((table) => (
               <div
                 key={table.id}

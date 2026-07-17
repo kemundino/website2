@@ -56,14 +56,14 @@ const UserManagement = () => {
           placeholder="Search for users by name, email or role..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="h-16 pl-16 pr-8 rounded-[1.5rem] bg-white border-none shadow-xl shadow-slate-100 text-slate-900 font-bold placeholder:text-slate-400 focus-visible:ring-primary/20"
+          className="h-16 pl-16 pr-8 rounded-[1.5rem] bg-card border-none shadow-xl shadow-slate-100/50 dark:shadow-black/20 text-foreground font-bold placeholder:text-muted-foreground focus-visible:ring-primary/20"
         />
       </div>
 
       {loading ? (
         <div className="py-20 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-slate-400 font-bold">Scanning User Database...</p>
+          <p className="mt-4 text-muted-foreground font-bold">Scanning User Database...</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -77,25 +77,25 @@ const UserManagement = () => {
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}
               >
-                <Card className="border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2.5rem] overflow-hidden bg-white group">
+                <Card className="border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2.5rem] overflow-hidden bg-card group">
                   <CardContent className="p-8">
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-2xl bg-slate-900 flex items-center justify-center text-white font-black text-xl group-hover:scale-110 transition-transform duration-500">
+                        <div className="w-16 h-16 rounded-2xl bg-foreground flex items-center justify-center text-background font-black text-xl group-hover:scale-110 transition-transform duration-500">
                           {user.name?.[0] || <User size={28} />}
                         </div>
                         <div>
-                          <h3 className="text-xl font-black text-slate-900 tracking-tight">{user.name || "Anonymous User"}</h3>
+                          <h3 className="text-xl font-black text-foreground tracking-tight">{user.name || "Anonymous User"}</h3>
                           <div className="flex items-center gap-2 mt-1">
-                            <Mail size={12} className="text-slate-400" />
-                            <p className="text-xs font-bold text-slate-500">{user.email || "No email provided"}</p>
+                            <Mail size={12} className="text-muted-foreground" />
+                            <p className="text-xs font-bold text-muted-foreground">{user.email || "No email provided"}</p>
                           </div>
                         </div>
                       </div>
                       <Badge className={`border-none px-4 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-widest ${
-                        user.role === 'admin' ? 'bg-indigo-100 text-indigo-700' : 
-                        user.role === 'staff' ? 'bg-cyan-100 text-cyan-700' : 
-                        'bg-slate-100 text-slate-700'
+                        user.role === 'admin' ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 
+                        user.role === 'staff' ? 'bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300' : 
+                        'bg-muted text-muted-foreground'
                       }`}>
                         <div className="flex items-center gap-1.5">
                           <Shield size={10} />
@@ -105,35 +105,35 @@ const UserManagement = () => {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-slate-50/50 rounded-2xl p-4 border border-slate-50">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Financial Impact</p>
+                      <div className="bg-muted/50 rounded-2xl p-4 border border-border/50">
+                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Financial Impact</p>
                         <div className="flex items-center gap-2">
-                          <div className="p-1.5 bg-emerald-100 rounded-lg">
-                            <DollarSign size={14} className="text-emerald-600" />
+                          <div className="p-1.5 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg">
+                            <DollarSign size={14} className="text-emerald-600 dark:text-emerald-400" />
                           </div>
-                          <span className="text-lg font-black text-slate-900">${(user.totalSpent || 0).toFixed(2)}</span>
+                          <span className="text-lg font-black text-foreground">${(user.totalSpent || 0).toFixed(2)}</span>
                         </div>
                       </div>
                       
-                      <div className="bg-slate-50/50 rounded-2xl p-4 border border-slate-50">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Total Orders</p>
+                      <div className="bg-muted/50 rounded-2xl p-4 border border-border/50">
+                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">Total Orders</p>
                         <div className="flex items-center gap-2">
-                          <div className="p-1.5 bg-blue-100 rounded-lg">
-                            <Clock size={14} className="text-blue-600" />
+                          <div className="p-1.5 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+                            <Clock size={14} className="text-blue-600 dark:text-blue-400" />
                           </div>
-                          <span className="text-lg font-black text-slate-900">{user.ordersCount || 0}</span>
+                          <span className="text-lg font-black text-foreground">{user.ordersCount || 0}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="mt-6 flex items-center justify-between pt-6 border-t border-slate-50">
+                    <div className="mt-6 flex items-center justify-between pt-6 border-t border-border/50">
                       <div className="flex items-center gap-2">
-                        <Calendar size={14} className="text-slate-400" />
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Joined {formatDate(user.createdAt)}</span>
+                        <Calendar size={14} className="text-muted-foreground" />
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Joined {formatDate(user.createdAt)}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Clock size={14} className="text-slate-400" />
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Last Active {formatDate(user.lastLogin)}</span>
+                        <Clock size={14} className="text-muted-foreground" />
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Last Active {formatDate(user.lastLogin)}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -143,9 +143,9 @@ const UserManagement = () => {
           </AnimatePresence>
           
           {filteredUsers.length === 0 && (
-            <div className="col-span-full py-20 text-center bg-white rounded-[3rem] border-2 border-dashed border-slate-100">
-              <User className="h-16 w-16 mx-auto mb-4 text-slate-200" />
-              <p className="text-xl font-black text-slate-400">No users found matching your search</p>
+            <div className="col-span-full py-20 text-center bg-card rounded-[3rem] border-2 border-dashed border-border/50">
+              <User className="h-16 w-16 mx-auto mb-4 text-muted-foreground/30" />
+              <p className="text-xl font-black text-muted-foreground">No users found matching your search</p>
             </div>
           )}
         </div>

@@ -78,8 +78,8 @@ const AnalyticsDashboard = () => {
                 <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
                 <h3 className="text-2xl font-bold mt-1">${(stats.totalRevenue || 0).toFixed(2)}</h3>
               </div>
-              <div className="p-3 bg-orange-100 rounded-xl">
-                <DollarSign className="h-6 w-6 text-orange-600" />
+              <div className="p-3 bg-orange-100 dark:bg-orange-900/40 rounded-xl">
+                <DollarSign className="h-6 w-6 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
             <div className="mt-4 flex items-center text-xs text-green-600">
@@ -96,8 +96,8 @@ const AnalyticsDashboard = () => {
                 <p className="text-sm font-medium text-muted-foreground">Total Orders</p>
                 <h3 className="text-2xl font-bold mt-1">{orders.length}</h3>
               </div>
-              <div className="p-3 bg-blue-100 rounded-xl">
-                <ShoppingBag className="h-6 w-6 text-blue-600" />
+              <div className="p-3 bg-blue-100 dark:bg-blue-900/40 rounded-xl">
+                <ShoppingBag className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
             <div className="mt-4 flex items-center text-xs text-blue-600">
@@ -114,8 +114,8 @@ const AnalyticsDashboard = () => {
                 <p className="text-sm font-medium text-muted-foreground">Avg. Order Value</p>
                 <h3 className="text-2xl font-bold mt-1">${(stats.avgOrderValue || 0).toFixed(2)}</h3>
               </div>
-              <div className="p-3 bg-green-100 rounded-xl">
-                <TrendingUp className="h-6 w-6 text-green-600" />
+              <div className="p-3 bg-green-100 dark:bg-green-900/40 rounded-xl">
+                <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
             </div>
             <div className="mt-4 flex items-center text-xs text-muted-foreground">
@@ -131,8 +131,8 @@ const AnalyticsDashboard = () => {
                 <p className="text-sm font-medium text-muted-foreground">Completed</p>
                 <h3 className="text-2xl font-bold mt-1">{stats.completedOrders}</h3>
               </div>
-              <div className="p-3 bg-purple-100 rounded-xl">
-                <Users className="h-6 w-6 text-purple-600" />
+              <div className="p-3 bg-purple-100 dark:bg-purple-900/40 rounded-xl">
+                <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
             <div className="mt-4 flex items-center text-xs text-purple-600">
@@ -232,7 +232,7 @@ const AnalyticsDashboard = () => {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
               {stats.statusData.map((entry, index) => (
-                <div key={entry.name} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                <div key={entry.name} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
                   <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
                   <div className="min-w-0">
                     <span className="text-xs font-medium block truncate">{entry.name}</span>
@@ -251,9 +251,9 @@ const AnalyticsDashboard = () => {
             <CardDescription>Real-time performance metrics</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-orange-100 rounded-lg text-orange-600">
+                <div className="p-2 bg-orange-100 dark:bg-orange-900/40 rounded-lg text-orange-600 dark:text-orange-400">
                   <Clock className="h-5 w-5" />
                 </div>
                 <div>
@@ -264,9 +264,9 @@ const AnalyticsDashboard = () => {
               <p className="text-xl font-bold">18m</p>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg text-green-600">
+                <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg text-green-600 dark:text-green-400">
                   <Star className="h-5 w-5" />
                 </div>
                 <div>
@@ -277,9 +277,9 @@ const AnalyticsDashboard = () => {
               <p className="text-xl font-bold">4.8/5</p>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg text-blue-600 dark:text-blue-400">
                   <Users className="h-5 w-5" />
                 </div>
                 <div>

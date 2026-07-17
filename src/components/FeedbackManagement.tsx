@@ -75,24 +75,24 @@ const FeedbackManagement = () => {
     <div className="space-y-6">
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-blue-50 border-blue-200">
+        <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900/50">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-blue-600 font-medium">Total Feedbacks</p>
-                <p className="text-2xl font-bold text-blue-800">{feedbacks.length}</p>
+                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">Total Feedbacks</p>
+                <p className="text-2xl font-bold text-blue-800 dark:text-blue-200">{feedbacks.length}</p>
               </div>
               <MessageSquare className="h-8 w-8 text-blue-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-green-50 border-green-200">
+        <Card className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900/50">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-green-600 font-medium">Average Rating</p>
-                <p className="text-2xl font-bold text-green-800">{averageRating}</p>
+                <p className="text-sm text-green-600 dark:text-green-400 font-medium">Average Rating</p>
+                <p className="text-2xl font-bold text-green-800 dark:text-green-200">{averageRating}</p>
               </div>
               <div className="flex items-center">
                 <Star className="h-8 w-8 text-yellow-500 fill-yellow-500" />
@@ -101,12 +101,12 @@ const FeedbackManagement = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-purple-50 border-purple-200">
+        <Card className="bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900/50">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-purple-600 font-medium">Positive Rate</p>
-                <p className="text-2xl font-bold text-purple-800">
+                <p className="text-sm text-purple-600 dark:text-purple-400 font-medium">Positive Rate</p>
+                <p className="text-2xl font-bold text-purple-800 dark:text-purple-200">
                   {feedbacks.length > 0 ? Math.round((distribution[5] + distribution[4]) / feedbacks.length * 100) : 0}%
                 </p>
               </div>
@@ -132,7 +132,7 @@ const FeedbackManagement = () => {
                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                   <span className="text-sm font-medium">{rating}</span>
                 </div>
-                <div className="flex-1 bg-gray-200 rounded-full h-4 overflow-hidden">
+                <div className="flex-1 bg-muted rounded-full h-4 overflow-hidden">
                   <div
                     className="bg-yellow-400 h-full transition-all duration-500"
                     style={{
@@ -140,7 +140,7 @@ const FeedbackManagement = () => {
                     }}
                   />
                 </div>
-                <span className="text-sm text-gray-600 w-8 text-right">
+                <span className="text-sm text-muted-foreground w-8 text-right">
                   {distribution[rating as keyof typeof distribution]}
                 </span>
               </div>
@@ -159,17 +159,17 @@ const FeedbackManagement = () => {
         </CardHeader>
         <CardContent>
           {feedbacks.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <div className="text-center py-8 text-muted-foreground">
+              <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
               <p>No customer feedbacks yet</p>
             </div>
           ) : (
             <div className="space-y-4">
               {feedbacks.map((feedback) => (
-                <div key={feedback.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                <div key={feedback.id} className="border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900">{feedback.itemName}</span>
+                      <span className="font-medium text-foreground">{feedback.itemName}</span>
                       {getSentimentIcon(feedback.rating)}
                     </div>
                     <div className="flex items-center gap-2">
@@ -180,7 +180,7 @@ const FeedbackManagement = () => {
                             className={`h-4 w-4 ${
                               star <= feedback.rating
                                 ? 'fill-yellow-400 text-yellow-400'
-                                : 'fill-gray-200 text-gray-200'
+                                : 'fill-muted text-muted'
                             }`}
                           />
                         ))}
@@ -192,12 +192,12 @@ const FeedbackManagement = () => {
                   </div>
                   
                   {feedback.comment && (
-                    <p className="text-sm text-gray-600 italic mt-2">
+                    <p className="text-sm text-muted-foreground italic mt-2">
                       "{feedback.comment}"
                     </p>
                   )}
                   
-                  <div className="text-xs text-gray-400 mt-2">
+                  <div className="text-xs text-muted-foreground mt-2">
                     Order ID: {feedback.orderId}
                   </div>
                 </div>

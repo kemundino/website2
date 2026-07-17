@@ -174,13 +174,13 @@ const ReservationSystem = () => {
 
   const getStatusColor = (status: Reservation['status']) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'confirmed': return 'bg-green-100 text-green-800 border-green-200';
-      case 'seated': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'completed': return 'bg-gray-100 text-gray-800 border-gray-200';
-      case 'cancelled': return 'bg-red-100 text-red-800 border-red-200';
-      case 'no-show': return 'bg-orange-100 text-orange-800 border-orange-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'pending': return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800';
+      case 'confirmed': return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800';
+      case 'seated': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800';
+      case 'completed': return 'bg-muted text-muted-foreground border-border';
+      case 'cancelled': return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800';
+      case 'no-show': return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 border-orange-200 dark:border-orange-800';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -367,8 +367,8 @@ const ReservationSystem = () => {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card className="p-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Calendar className="h-5 w-5 text-blue-600" />
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+              <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <p className="text-2xl font-bold">{stats.today}</p>
@@ -379,8 +379,8 @@ const ReservationSystem = () => {
         
         <Card className="p-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+            <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
+              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-green-600">{stats.confirmed}</p>
@@ -391,8 +391,8 @@ const ReservationSystem = () => {
         
         <Card className="p-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <Clock className="h-5 w-5 text-yellow-600" />
+            <div className="p-2 bg-yellow-100 dark:bg-yellow-900/40 rounded-lg">
+              <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
@@ -403,8 +403,8 @@ const ReservationSystem = () => {
         
         <Card className="p-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Users className="h-5 w-5 text-purple-600" />
+            <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-lg">
+              <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-purple-600">{stats.averagePartySize.toFixed(1)}</p>
@@ -415,8 +415,8 @@ const ReservationSystem = () => {
         
         <Card className="p-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <TrendingUp className="h-5 w-5 text-green-600" />
+            <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
+              <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-green-600">${stats.estimatedRevenue}</p>
@@ -572,13 +572,13 @@ const ReservationSystem = () => {
               {(reservation.specialRequests || reservation.dietaryRestrictions || reservation.highChairNeeded || reservation.accessibilityNeeded) && (
                 <div className="mt-2 space-y-1">
                   {reservation.specialRequests && (
-                    <p className="text-sm text-blue-600 bg-blue-50 p-2 rounded">
+                    <p className="text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 p-2 rounded">
                       <AlertCircle className="h-3 w-3 inline mr-1" />
                       Special: {reservation.specialRequests}
                     </p>
                   )}
                   {reservation.dietaryRestrictions && (
-                    <p className="text-sm text-orange-600 bg-orange-50 p-2 rounded">
+                    <p className="text-sm text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/50 p-2 rounded">
                       Dietary: {reservation.dietaryRestrictions}
                     </p>
                   )}

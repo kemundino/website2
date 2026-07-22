@@ -23,6 +23,7 @@ export interface UserProfile {
   uid: string;
   email: string;
   displayName?: string;
+  name?: string;
   role: 'admin' | 'customer' | 'staff';
   phoneNumber?: string;
   address?: string;
@@ -121,6 +122,7 @@ class AuthService {
         uid: userCredential.user.uid,
         email: userCredential.user.email!,
         displayName: displayName,
+        name: displayName,
         role: role,
         loyaltyPoints: 0,
         totalOrders: 0,
@@ -234,7 +236,20 @@ class AuthService {
         }
 
         const docUid = typeof data.uid === 'string' && data.uid ? data.uid : authUid;
-        return { ...(data as unknown as UserProfile), uid: docUid, email, role };
+        const resolvedName =
+          (typeof data.name === 'string' && data.name) ||
+          (typeof data.displayName === 'string' && data.displayName) ||
+          (typeof data.fullName === 'string' && data.fullName) ||
+          undefined;
+
+        return {
+          ...(data as unknown as UserProfile),
+          uid: docUid,
+          email,
+          role,
+          displayName: resolvedName || (data.displayName as string | undefined),
+          name: resolvedName || (data.name as string | undefined)
+        };
       };
 
       const result = await UserService.getOne(uid);
@@ -294,10 +309,12 @@ class AuthService {
       // While the auth listener runs, currentUser matches — bootstrap a profile without touching other modules.
       const bootstrapEmail = authEmail;
       if (bootstrapEmail) {
+        const bootstrapName = cu!.displayName || bootstrapEmail.split('@')[0] || 'User';
         const userProfile: UserProfile = {
           uid,
           email: bootstrapEmail,
-          displayName: cu!.displayName || bootstrapEmail.split('@')[0] || 'User',
+          displayName: bootstrapName,
+          name: bootstrapName,
           role: 'customer',
           avatar: cu!.photoURL ?? undefined,
           loyaltyPoints: 0,
@@ -430,11 +447,13 @@ class AuthService {
       // Check if user exists in Firestore, create profile if not
       const existingProfile = await this.getUserProfile(result.user.uid);
       if (!existingProfile.success) {
+        const googleName = result.user.displayName || 'Google User';
         // Create user profile for OAuth user
         const userProfile: UserProfile = {
           uid: result.user.uid,
           email: result.user.email!,
-          displayName: result.user.displayName || 'Google User',
+          displayName: googleName,
+          name: googleName,
           role: 'customer', // Default role for OAuth users
           avatar: result.user.photoURL ?? undefined,
           loyaltyPoints: 0,
@@ -486,11 +505,13 @@ class AuthService {
       // Check if user exists in Firestore, create profile if not
       const existingProfile = await this.getUserProfile(result.user.uid);
       if (!existingProfile.success) {
+        const githubName = result.user.displayName || 'GitHub User';
         // Create user profile for OAuth user
         const userProfile: UserProfile = {
           uid: result.user.uid,
           email: result.user.email!,
-          displayName: result.user.displayName || 'GitHub User',
+          displayName: githubName,
+          name: githubName,
           role: 'customer', // Default role for OAuth users
           avatar: result.user.photoURL ?? undefined,
           loyaltyPoints: 0,

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { authService, UserProfile } from "@/firebase/auth";
-import { OrderService, FirestoreService, StaffService } from "@/firebase/firestore";
+import { OrderService, FirestoreService, StaffService, UserService } from "@/firebase/firestore";
 import { toast } from "sonner";
 
 export interface User {
@@ -169,18 +169,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     // Check if any admin users exist
-    async function checkAdminUsers(currentUserUid?: string) {
+    async function checkAdminUsers(_currentUserUid?: string) {
       try {
         // Get all users to check for admin users
         const result = await FirestoreService.getAll('users');
         if (result.success && result.data) {
-          const adminUsers = result.data.filter((u: any) => u.role === 'admin' || u.isAdmin === true);
+          const allUsers = result.data as any[];
+          const adminUsers = allUsers.filter((u: any) => u.role === 'admin' || u.isAdmin === true);
           
           if (adminUsers.length > 1) {
             console.log(`⚠️ Found ${adminUsers.length} admins. Automatically fixing to ensure only ONE admin exists...`);
             
             // Sort admins by creation date (oldest first) to find the ORIGINAL admin
-            const sortedAdmins = [...adminUsers].sort((a, b) => {
+            const sortedAdmins = [...adminUsers].sort((a: any, b: any) => {
               const dateA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : new Date(a.createdAt || 0).getTime();
               const dateB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : new Date(b.createdAt || 0).getTime();
               return dateA - dateB;
@@ -385,6 +386,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Convert our User interface to UserProfile format
       const profileUpdates: Partial<UserProfile> = {
         displayName: data.name || user.name,
+        name: data.name || user.name,
         phoneNumber: (data as any).phone,
         address: (data as any).address,
         avatar: data.avatar,

@@ -10,6 +10,10 @@ interface UserProfile {
   id: string;
   uid?: string;
   name?: string;
+  displayName?: string;
+  fullName?: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
   role?: string;
   totalSpent?: number;
@@ -17,6 +21,33 @@ interface UserProfile {
   lastLogin?: any;
   createdAt?: any;
 }
+
+const getUserDisplayName = (u: UserProfile): string => {
+  const possibleName =
+    u.name ||
+    u.displayName ||
+    u.fullName ||
+    (u.firstName || u.lastName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : '');
+
+  if (possibleName && possibleName.trim() && possibleName.trim().toLowerCase() !== "anonymous user") {
+    return possibleName.trim();
+  }
+
+  if (u.email && u.email.includes('@')) {
+    const prefix = u.email.split('@')[0].trim();
+    if (prefix) {
+      const formatted = prefix
+        .replace(/[._-]/g, ' ')
+        .split(' ')
+        .filter(Boolean)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      if (formatted) return formatted;
+    }
+  }
+
+  return "Anonymous User";
+};
 
 const UserManagement = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -33,10 +64,13 @@ const UserManagement = () => {
 
   const filteredUsers = users.filter((u) => {
     const search = searchQuery.toLowerCase();
+    const userName = getUserDisplayName(u).toLowerCase();
+    const email = (u.email || "").toLowerCase();
+    const role = (u.role || "").toLowerCase();
     return (
-      (u.name?.toLowerCase().includes(search)) ||
-      (u.email?.toLowerCase().includes(search)) ||
-      (u.role?.toLowerCase().includes(search))
+      userName.includes(search) ||
+      email.includes(search) ||
+      role.includes(search)
     );
   });
 
@@ -68,30 +102,36 @@ const UserManagement = () => {
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <AnimatePresence mode="popLayout">
-            {filteredUsers.map((user) => (
-              <motion.div
-                key={user.id}
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card className="border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2.5rem] overflow-hidden bg-card group">
-                  <CardContent className="p-8">
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-2xl bg-foreground flex items-center justify-center text-background font-black text-xl group-hover:scale-110 transition-transform duration-500">
-                          {user.name?.[0] || <User size={28} />}
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-black text-foreground tracking-tight">{user.name || "Anonymous User"}</h3>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Mail size={12} className="text-muted-foreground" />
-                            <p className="text-xs font-bold text-muted-foreground">{user.email || "No email provided"}</p>
+            {filteredUsers.map((user) => {
+              const displayName = getUserDisplayName(user);
+              const avatarInitial = displayName && displayName !== "Anonymous User"
+                ? displayName.charAt(0).toUpperCase()
+                : null;
+
+              return (
+                <motion.div
+                  key={user.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Card className="border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2.5rem] overflow-hidden bg-card group">
+                    <CardContent className="p-8">
+                      <div className="flex items-start justify-between mb-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 rounded-2xl bg-foreground flex items-center justify-center text-background font-black text-xl group-hover:scale-110 transition-transform duration-500">
+                            {avatarInitial || <User size={28} />}
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-black text-foreground tracking-tight">{displayName}</h3>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Mail size={12} className="text-muted-foreground" />
+                              <p className="text-xs font-bold text-muted-foreground">{user.email || "No email provided"}</p>
+                            </div>
                           </div>
                         </div>
-                      </div>
                       <Badge className={`border-none px-4 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-widest ${
                         user.role === 'admin' ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 
                         user.role === 'staff' ? 'bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300' : 
@@ -139,7 +179,8 @@ const UserManagement = () => {
                   </CardContent>
                 </Card>
               </motion.div>
-            ))}
+            );
+          })}
           </AnimatePresence>
           
           {filteredUsers.length === 0 && (
